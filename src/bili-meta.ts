@@ -42,19 +42,19 @@ const pageSchema = z.object({
 })
 const statSchema = z
   .object({
-    aid: z.number(),
-    view: z.number(),
-    danmaku: z.number(),
-    reply: z.number(),
-    favorite: z.number(),
-    coin: z.number(),
-    share: z.number(),
-    now_rank: z.number(),
-    his_rank: z.number(),
-    like: z.number(),
-    dislike: z.number(),
-    evaluation: z.string(),
-    vt: z.number()
+    aid: z.number().optional(),
+    view: z.number().optional(),
+    danmaku: z.number().optional(),
+    reply: z.number().optional(),
+    favorite: z.number().optional(),
+    coin: z.number().optional(),
+    share: z.number().optional(),
+    now_rank: z.number().optional(),
+    his_rank: z.number().optional(),
+    like: z.number().optional(),
+    dislike: z.number().optional(),
+    evaluation: z.string().optional(),
+    vt: z.number().optional()
   })
   .describe('视频状态信息')
 
@@ -116,31 +116,38 @@ const detailSchema = z.object({
       rotate: z.number()
     })
     .describe('视频1P分辨率'),
-  premiere: z.any().nullish().describe('unknown'),
-  teenage_mode: z.number().describe('青少年模式，具体含义未知'),
-  is_chargeable_season: z.coerce.boolean().describe('是否可充电（剧集季)?'),
-  is_story: z.coerce.boolean().describe('unknown'),
-  is_upower_exclusive: z.coerce.boolean().describe('是否充电专属'),
-  is_upower_play: z.coerce.boolean().describe('unknown'),
-  is_upower_show: z.coerce.boolean().describe('unknown'),
-  no_cache: z.coerce.boolean().describe('不允许缓存'),
-  enable_vt: z.number().optional().describe('unknwon'),
-  vt_display: z.string().optional().describe('unknown'),
+  premiere: z.any().nullish().describe('unknown').optional(),
+  teenage_mode: z.number().describe('青少年模式，具体含义未知').optional(),
+  is_chargeable_season: z.coerce
+    .boolean()
+    .describe('是否可充电（剧集季)?')
+    .optional(),
+  is_story: z.coerce.boolean().describe('unknown').optional(),
+  is_upower_exclusive: z.coerce.boolean().describe('是否充电专属').optional(),
+  is_upower_play: z.coerce.boolean().describe('unknown').optional(),
+  is_upower_show: z.coerce.boolean().describe('unknown').optional(),
+  no_cache: z.coerce.boolean().describe('不允许缓存').optional(),
+  enable_vt: z.number().optional().describe('unknwon').optional(),
+  vt_display: z.string().optional().describe('unknown').optional(),
   pages: z.array(pageSchema).describe('分P信息'),
-  subtitle: z.object({
-    allow_submit: z.boolean().describe('是否允许提交'),
-    list: z.any().array()
-  }),
-  is_season_display: z.boolean().describe('unknown'),
-  user_garb: z.any().describe('用户装扮信息'),
-  honor_reply: z.object({
-    honor: z.any().array().describe('荣誉，如全站最高排名')
-  }),
-  like_icon: z.string().describe('可能是活动定制点赞图标'),
-  need_jump_bv: z.boolean().describe('跳转到BV'),
-  disable_show_up_info: z.boolean().describe('不展示 up 信息'),
-  is_story_play: z.number().describe('unknown'),
-  is_view_self: z.boolean().describe('是否为自己投稿')
+  subtitle: z
+    .object({
+      allow_submit: z.boolean().describe('是否允许提交'),
+      list: z.any().array()
+    })
+    .optional(),
+  is_season_display: z.boolean().describe('unknown').optional(),
+  user_garb: z.any().describe('用户装扮信息').optional(),
+  honor_reply: z
+    .object({
+      honor: z.any().array().optional().describe('荣誉，如全站最高排名')
+    })
+    .optional(),
+  like_icon: z.string().describe('可能是活动定制点赞图标').optional(),
+  need_jump_bv: z.boolean().describe('跳转到BV').optional(),
+  disable_show_up_info: z.boolean().describe('不展示 up 信息').optional(),
+  is_story_play: z.number().describe('unknown').optional(),
+  is_view_self: z.boolean().describe('是否为自己投稿').optional()
 })
 
 export type VideoDetail = z.infer<typeof detailSchema>
