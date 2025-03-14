@@ -24,6 +24,20 @@ jobs:
         with:
           aid: 2325306
 
+      - name: Test Download Local Action
+        id: test-action
+        uses: ./
+        with:
+          aid: 2325306
+          audio: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: output.mp3
+          path: |
+            *.mp3
+          
+
       - name: Print Output
         id: output
         run: echo "${{ steps.test-action.outputs.aid }}"
