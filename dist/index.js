@@ -31656,11 +31656,13 @@ const responseSchema = z.object({
     ttl: z.coerce.number().optional()
 });
 const apiFetch = async (input, init) => {
+    coreExports.debug(`Fetching ${input}`);
     const data = await fetch(input, init);
     if (!data.ok) {
         throw new Error(`Failed to fetch video data: ${data.statusText}`);
     }
     const body = await data.json();
+    coreExports.debug(`output, ${JSON.stringify(body)}`);
     const parsed = responseSchema.safeParse(body);
     if (!parsed.success) {
         throw new Error(`Failed to parse video data: ${parsed.error}`);
