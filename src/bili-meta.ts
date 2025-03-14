@@ -25,7 +25,7 @@ const rightSchema = z
   .describe('视频属性flag')
 
 const pageSchema = z.object({
-  cid: z.string().describe('分P cid'),
+  cid: z.number().describe('分P cid'),
   dimension: z
     .object({
       width: z.number(),
@@ -54,7 +54,7 @@ const statSchema = z
     like: z.number(),
     dislike: z.number(),
     evaluation: z.string(),
-    vt: z.string()
+    vt: z.number()
   })
   .describe('视频状态信息')
 
@@ -102,7 +102,7 @@ const detailSchema = z.object({
   argue_info: z
     .object({
       argue_msg: z.string(),
-      argue_type: z.string(),
+      argue_type: z.number(),
       argue_link: z.string()
     })
     .optional()
