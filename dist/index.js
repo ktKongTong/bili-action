@@ -31986,6 +31986,7 @@ const handleItem = (data, key) => {
             coreExports.setOutput(key, data);
             break;
         case 'object':
+            coreExports.info(`handle object: ${key}, ${JSON.stringify(data)}`);
             if (data[key] instanceof Array) {
                 handleArray(data[key], key);
             }

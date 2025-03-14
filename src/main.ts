@@ -133,6 +133,7 @@ const handleItem = (data: any, key: string) => {
       core.setOutput(key, data)
       break
     case 'object':
+      core.info(`handle object: ${key}, ${JSON.stringify(data)}`)
       if (data[key] instanceof Array) {
         handleArray(data[key], key)
       } else {
