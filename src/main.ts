@@ -116,6 +116,7 @@ export async function run(): Promise<void> {
 // }
 
 const handleArray = (data: any[], key: string) => {
+  core.debug(`handling array: ${key}, ${data}`)
   for (const idx of data) {
     handleItem(data[idx], `${key}[${idx}]`)
   }
@@ -150,6 +151,7 @@ const handleData = (data: Record<string, any>, prefix: string = '') => {
   const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
   const keys = Object.keys(data)
   for (const key of keys) {
+    core.debug(`handling item: ${key}, ${data}`)
     handleItem(data[key], getKey(key))
   }
 }

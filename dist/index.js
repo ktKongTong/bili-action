@@ -31969,6 +31969,7 @@ async function run() {
 //   '62012': '仅UP主自己可见'
 // }
 const handleArray = (data, key) => {
+    coreExports.debug(`handling array: ${key}, ${data}`);
     for (const idx of data) {
         handleItem(data[idx], `${key}[${idx}]`);
     }
@@ -32003,6 +32004,7 @@ const handleData = (data, prefix = '') => {
     const getKey = (key) => prefix + `${prefix === '' ? '' : '.'}` + key;
     const keys = Object.keys(data);
     for (const key of keys) {
+        coreExports.debug(`handling item: ${key}, ${data}`);
         handleItem(data[key], getKey(key));
     }
 };
