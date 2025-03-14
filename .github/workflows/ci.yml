@@ -25,7 +25,7 @@ jobs:
           aid: 2325306
 
       - name: Test Download Local Action
-        id: test-action
+        id: test-stream-action
         uses: ./
         with:
           aid: 2325306
