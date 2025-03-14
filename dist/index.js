@@ -31974,11 +31974,14 @@ const handleArray = (data, key) => {
     }
 };
 const handleItem = (data, key) => {
+    if (data == null)
+        return;
     switch (typeof data) {
         case 'bigint':
         case 'number':
         case 'string':
         case 'boolean':
+            coreExports.debug(`设置输出: ${key}, ${data}`);
             coreExports.setOutput(key, data);
             break;
         case 'object':

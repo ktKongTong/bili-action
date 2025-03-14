@@ -122,11 +122,13 @@ const handleArray = (data: any[], key: string) => {
 }
 
 const handleItem = (data: any, key: string) => {
+  if (data == null) return
   switch (typeof data) {
     case 'bigint':
     case 'number':
     case 'string':
     case 'boolean':
+      core.debug(`设置输出: ${key}, ${data}`)
       core.setOutput(key, data)
       break
     case 'object':
