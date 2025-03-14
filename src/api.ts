@@ -1,5 +1,5 @@
 import z from 'zod'
-
+import * as core from '@actions/core'
 const responseSchema = z.object({
   code: z.coerce.string(),
   message: z.coerce.string(),
@@ -12,11 +12,13 @@ const apiFetch = async <T = unknown>(
   input: string | URL | globalThis.Request,
   init?: RequestInit
 ) => {
+  core.debug(`Fetching ${input}`)
   const data = await fetch(input, init)
   if (!data.ok) {
     throw new Error(`Failed to fetch video data: ${data.statusText}`)
   }
   const body = await data.json()
+  core.debug(`output, ${JSON.stringify(body)}`)
   const parsed = responseSchema.safeParse(body)
   if (!parsed.success) {
     throw new Error(`Failed to parse video data: ${parsed.error}`)
