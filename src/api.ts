@@ -1,7 +1,7 @@
 import z from 'zod'
 import * as core from '@actions/core'
 const responseSchema = z.object({
-  code: z.coerce.string(),
+  code: z.number(),
   message: z.coerce.string(),
   data: z.any().optional(),
   result: z.any().optional(),
@@ -23,6 +23,8 @@ const apiFetch = async <T = unknown>(
   if (!parsed.success) {
     throw new Error(`Failed to parse video data: ${parsed.error}`)
   }
+  if (parsed.data.code != 0)
+    core.debug(`请求出错,非预期结果：${JSON.stringify(parsed.data)}`)
   if (parsed.data.data) return parsed.data.data as T
   return parsed.data.result as T
 }

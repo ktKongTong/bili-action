@@ -61,8 +61,8 @@ const userStrategy: Strategy = {
 }
 
 const idStrategy = {
-  name: '按照bvid/aid/cid获取视频',
-  cond: (input) => input.aid || input.bvid || input.cid,
+  name: '按照bvid/aid获取视频',
+  cond: (input) => input.aid || input.bvid,
   getter: (input) =>
     getBiliMetaById({ aid: input.aid, bvid: input.bvid, cid: input.cid })
 } satisfies Strategy

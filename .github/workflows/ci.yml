@@ -22,7 +22,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          cid: 3629601
+          aid: 2325306
 
       - name: Print Output
         id: output

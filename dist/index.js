@@ -31649,7 +31649,7 @@ var z = /*#__PURE__*/Object.freeze({
 });
 
 const responseSchema = z.object({
-    code: z.coerce.string(),
+    code: z.number(),
     message: z.coerce.string(),
     data: z.any().optional(),
     result: z.any().optional(),
@@ -31667,6 +31667,8 @@ const apiFetch = async (input, init) => {
     if (!parsed.success) {
         throw new Error(`Failed to parse video data: ${parsed.error}`);
     }
+    if (parsed.data.code != 0)
+        coreExports.debug(`请求出错,非预期结果：${JSON.stringify(parsed.data)}`);
     if (parsed.data.data)
         return parsed.data.data;
     return parsed.data.result;
@@ -31913,8 +31915,8 @@ const userStrategy = {
     getter: async (input) => await getBiliMetaByUser({ mid: input.mid, keyword: input.keyword })
 };
 const idStrategy = {
-    name: '按照bvid/aid/cid获取视频',
-    cond: (input) => input.aid || input.bvid || input.cid,
+    name: '按照bvid/aid获取视频',
+    cond: (input) => input.aid || input.bvid,
     getter: (input) => getBiliMetaById({ aid: input.aid, bvid: input.bvid, cid: input.cid })
 };
 const strategies = [idStrategy, userStrategy];
