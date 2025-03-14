@@ -31969,7 +31969,6 @@ async function run() {
 //   '62012': '仅UP主自己可见'
 // }
 const handleArray = (data, key) => {
-    coreExports.debug(`handling array: ${key}, ${data}`);
     for (const idx of data) {
         handleItem(data[idx], `${key}[${idx}]`);
     }
@@ -31986,12 +31985,11 @@ const handleItem = (data, key) => {
             coreExports.setOutput(key, data);
             break;
         case 'object':
-            coreExports.info(`handle object: ${key}, ${JSON.stringify(data)}`);
-            if (data[key] instanceof Array) {
-                handleArray(data[key], key);
+            if (data instanceof Array) {
+                handleArray(data, key);
             }
             else {
-                handleData(data[key], key);
+                handleData(data, key);
             }
             break;
         case 'undefined':
@@ -32005,7 +32003,6 @@ const handleData = (data, prefix = '') => {
     const getKey = (key) => prefix + `${prefix === '' ? '' : '.'}` + key;
     const keys = Object.keys(data);
     for (const key of keys) {
-        coreExports.debug(`handling item: ${key}, ${data}`);
         handleItem(data[key], getKey(key));
     }
 };

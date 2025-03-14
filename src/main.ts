@@ -116,7 +116,6 @@ export async function run(): Promise<void> {
 // }
 
 const handleArray = (data: any[], key: string) => {
-  core.debug(`handling array: ${key}, ${data}`)
   for (const idx of data) {
     handleItem(data[idx], `${key}[${idx}]`)
   }
@@ -133,11 +132,10 @@ const handleItem = (data: any, key: string) => {
       core.setOutput(key, data)
       break
     case 'object':
-      core.info(`handle object: ${key}, ${JSON.stringify(data)}`)
-      if (data[key] instanceof Array) {
-        handleArray(data[key], key)
+      if (data instanceof Array) {
+        handleArray(data, key)
       } else {
-        handleData(data[key], key)
+        handleData(data, key)
       }
       break
     case 'undefined':
@@ -152,7 +150,6 @@ const handleData = (data: Record<string, any>, prefix: string = '') => {
   const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
   const keys = Object.keys(data)
   for (const key of keys) {
-    core.debug(`handling item: ${key}, ${data}`)
     handleItem(data[key], getKey(key))
   }
 }
