@@ -155,11 +155,41 @@ export async function getBiliMetaById(opt: {
   return data
 }
 
+const archiveItemSchema = z.object({
+  aid: z.coerce.string(),
+  title: z.string(),
+  pubdate: z.number(),
+  ctime: z.number(),
+  state: z.number(),
+  pic: z.string(),
+  duration: z.number(),
+  stat: z.any(),
+  bvid: z.string(),
+  ugc_pay: z.number(),
+  interactive_video: z.boolean(),
+  enable_vt: z.number(),
+  vt_display: z.string(),
+  playback_position: z.number()
+})
+const archiveSchema = z.object({
+  archives: z.array(archiveItemSchema),
+  page: z.object({
+    num: z.number(),
+    size: z.number(),
+    total: z.number()
+  })
+})
+
 export async function getBiliMetaByUser(opt: {
   mid: number
   keyword?: string
 }) {
-  const detail = await api.getDetailByUser(opt)
-  const data = detailSchema.parse(detail)
+  //
+  const archives = await api.getArchiveByUser(opt)
+  const parsedArchives = archiveSchema.parse(archives)
+  const bvid = parsedArchives.archives[0].bvid
+  const data = getBiliMetaById({
+    bvid: bvid
+  })
   return data
 }

@@ -24,13 +24,13 @@ jobs:
         with:
           aid: 2325306
 
-#      - name: Test Download Local Action
-#        id: test-stream-action
-#        uses: ./
-#        with:
-#          aid: 2325306
-#          audio: true
-#
+      #      - name: Test Download Local Action
+      #        id: test-stream-action
+      #        uses: ./
+      #        with:
+      #          aid: 2325306
+      #          audio: true
+      #
       - name: Test Download Local Action
         id: test-get-stream-by-user-action
         uses: ./
@@ -43,8 +43,6 @@ jobs:
           name: output.audio.mp4
           path: |
             *.audio.mp4
-            
-            
 
       - name: Print Output
         id: output
