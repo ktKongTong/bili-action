@@ -20,7 +20,7 @@ const dashItemSchema = z.object({
   backupUrl: z.string().array(),
   base_url: z.string(),
   baseUrl: z.string(),
-  size: z.number(),
+  size: z.number().optional(),
   id: z.number()
 })
 const dashSchema = z.object({
@@ -62,14 +62,14 @@ export const getAndDownloadStream = async (
   const stream = streamSchema.parse(streamDetail)
   if (opt.audio) {
     const streams = stream.dash.audio
-    const sortedStream = streams.sort((a, b) => a.size - b.size)
+    const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth)
     const { baseUrl: url, mimeType } = sortedStream[0]
     const ext = getExtByMimeType(mimeType)
     await saveStreamTo(url, `output.${ext}`)
   }
   if (opt.video) {
     const streams = stream.dash.audio
-    const sortedStream = streams.sort((a, b) => a.size - b.size)
+    const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth)
     const { baseUrl: url, mimeType } = sortedStream[0]
     const ext = getExtByMimeType(mimeType)
     await saveStreamTo(url, `output.${ext}`)
