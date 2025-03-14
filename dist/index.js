@@ -31898,8 +31898,8 @@ function parseInput() {
         cid: coreExports.getInput('cid'),
         mid: coreExports.getInput('mid'),
         keyword: coreExports.getInput('keyword'),
-        audio: coreExports.getBooleanInput('audio'),
-        video: coreExports.getBooleanInput('video'),
+        audio: coreExports.getInput('audio'),
+        video: coreExports.getInput('video'),
         sessdata: coreExports.getInput('sessdata')
     };
     const parsedInput = inputSchema.parse(input);

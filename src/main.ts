@@ -38,8 +38,8 @@ function parseInput() {
     cid: core.getInput('cid'),
     mid: core.getInput('mid'),
     keyword: core.getInput('keyword'),
-    audio: core.getBooleanInput('audio'),
-    video: core.getBooleanInput('video'),
+    audio: core.getInput('audio'),
+    video: core.getInput('video'),
     sessdata: core.getInput('sessdata')
   }
   const parsedInput = inputSchema.parse(input)
