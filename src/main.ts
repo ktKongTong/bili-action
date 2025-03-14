@@ -97,7 +97,10 @@ export async function run(): Promise<void> {
     if (input.audio || input.video) {
       core.debug(`开始获取Stream`)
       // 保存视频流，音频流
-      await getAndDownloadStream(videoMeta.cid, {})
+      await getAndDownloadStream(videoMeta.cid, {
+        video: input.video,
+        audio: input.audio
+      })
       core.debug(`Stream获取完成`)
     }
     core.debug('Bilibili Action 执行完成')

@@ -31873,11 +31873,33 @@ const saveStreamTo = async (url, destination) => {
     const fileStream = require$$1.createWriteStream(destination, { flags: 'wx' });
     await finished(Readable.fromWeb(res.body).pipe(fileStream));
 };
+const getExtByMimeType = (mime) => {
+    let ext = 'mp3';
+    switch (mime) {
+        case 'audio/mp4':
+            ext = 'audio.mp4';
+            break;
+        case 'video/mp4':
+            ext = 'video.mp4';
+            break;
+    }
+    return ext;
+};
 const getAndDownloadStream = async (cid, opt) => {
     const streamDetail = await api.getStreamByCid({ cid, ...opt });
     const stream = streamSchema.parse(streamDetail);
-    const url = stream.dash.audio[0].baseUrl;
-    await saveStreamTo(url, 'output.mp3');
+    if (opt.audio) {
+        const url = stream.dash.audio[0].baseUrl;
+        const mimeType = stream.dash.audio[0].mimeType;
+        const ext = getExtByMimeType(mimeType);
+        await saveStreamTo(url, `output.${ext}`);
+    }
+    if (opt.video) {
+        const url = stream.dash.video[0].baseUrl;
+        const mimeType = stream.dash.video[0].mimeType;
+        const ext = getExtByMimeType(mimeType);
+        await saveStreamTo(url, `output.${ext}`);
+    }
 };
 
 const commonFieldSchema = z.object({
@@ -31949,7 +31971,10 @@ async function run() {
         if (input.audio || input.video) {
             coreExports.debug(`开始获取Stream`);
             // 保存视频流，音频流
-            await getAndDownloadStream(videoMeta.cid, {});
+            await getAndDownloadStream(videoMeta.cid, {
+                video: input.video,
+                audio: input.audio
+            });
             coreExports.debug(`Stream获取完成`);
         }
         coreExports.debug('Bilibili Action 执行完成');

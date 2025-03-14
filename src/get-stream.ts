@@ -3,7 +3,10 @@ import z from 'zod'
 import fs from 'fs'
 import { Readable } from 'node:stream'
 import { finished } from 'node:stream/promises'
-type StreamOption = {}
+type StreamOption = {
+  video?: boolean
+  audio?: boolean
+}
 
 const dashItemSchema = z.object({
   start_with_sap: z.number(),
@@ -36,9 +39,32 @@ const saveStreamTo = async (url: string, destination: string) => {
   await finished(Readable.fromWeb(res.body!).pipe(fileStream))
 }
 
+const getExtByMimeType = (mime: string) => {
+  let ext = 'mp3'
+  switch (mime) {
+    case 'audio/mp4':
+      ext = 'audio.mp4'
+      break
+    case 'video/mp4':
+      ext = 'video.mp4'
+      break
+  }
+  return ext
+}
+
 export const getAndDownloadStream = async (cid: number, opt: StreamOption) => {
   const streamDetail = await api.getStreamByCid({ cid, ...opt })
   const stream = streamSchema.parse(streamDetail)
-  const url = stream.dash.audio[0].baseUrl
-  await saveStreamTo(url, 'output.mp3')
+  if (opt.audio) {
+    const url = stream.dash.audio[0].baseUrl
+    const mimeType = stream.dash.audio[0].mimeType
+    const ext = getExtByMimeType(mimeType)
+    await saveStreamTo(url, `output.${ext}`)
+  }
+  if (opt.video) {
+    const url = stream.dash.video[0].baseUrl
+    const mimeType = stream.dash.video[0].mimeType
+    const ext = getExtByMimeType(mimeType)
+    await saveStreamTo(url, `output.${ext}`)
+  }
 }
