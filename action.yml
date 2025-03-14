@@ -26,14 +26,11 @@ inputs:
     description: |
       search keyword, use with `mid`, get user's latest video with keyword
     required: false
-
   audio:
-    description: |
-      upload audio
+    description: upload audio
     required: false
   video:
-    description: |
-      upload video
+    description: upload video
     required: false
   sessdata:
     description: |
