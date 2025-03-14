@@ -49,9 +49,13 @@ export const api = {
     return data
   },
 
-  getStreamByCid: async (opt: { cid: number; sessdata?: string }) => {
+  getStreamByCidAndBvid: async (opt: {
+    cid: number
+    bvid: string
+    sessdata?: string
+  }) => {
     const data = await apiFetch(
-      `https://api.bilibili.com/pgc/player/web/playurl?fnval=16&cid=${opt.cid}`
+      `https://api.bilibili.com/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`
     )
     return data
   }

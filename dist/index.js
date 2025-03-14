@@ -31690,8 +31690,8 @@ const api = {
         const data = await apiFetch(`https://api.bilibili.com/x/series/recArchivesByKeywords?mid=${opt.mid}&keywords=${opt.keyword ?? ''}&pn=0`);
         return data;
     },
-    getStreamByCid: async (opt) => {
-        const data = await apiFetch(`https://api.bilibili.com/pgc/player/web/playurl?fnval=16&cid=${opt.cid}`);
+    getStreamByCidAndBvid: async (opt) => {
+        const data = await apiFetch(`https://api.bilibili.com/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`);
         return data;
     }
 };
@@ -31921,18 +31921,20 @@ const getExtByMimeType = (mime) => {
     }
     return ext;
 };
-const getAndDownloadStream = async (cid, opt) => {
-    const streamDetail = await api.getStreamByCid({ cid, ...opt });
+const getAndDownloadStream = async (cid, bvid, opt) => {
+    const streamDetail = await api.getStreamByCidAndBvid({ cid, bvid, ...opt });
     const stream = streamSchema.parse(streamDetail);
     if (opt.audio) {
-        const url = stream.dash.audio[0].baseUrl;
-        const mimeType = stream.dash.audio[0].mimeType;
+        const streams = stream.dash.audio;
+        const sortedStream = streams.sort((a, b) => a.size - b.size);
+        const { baseUrl: url, mimeType } = sortedStream[0];
         const ext = getExtByMimeType(mimeType);
         await saveStreamTo(url, `output.${ext}`);
     }
     if (opt.video) {
-        const url = stream.dash.video[0].baseUrl;
-        const mimeType = stream.dash.video[0].mimeType;
+        const streams = stream.dash.audio;
+        const sortedStream = streams.sort((a, b) => a.size - b.size);
+        const { baseUrl: url, mimeType } = sortedStream[0];
         const ext = getExtByMimeType(mimeType);
         await saveStreamTo(url, `output.${ext}`);
     }
@@ -32007,7 +32009,7 @@ async function run() {
         if (input.audio || input.video) {
             coreExports.debug(`开始获取Stream`);
             // 保存视频流，音频流
-            await getAndDownloadStream(videoMeta.cid, {
+            await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
                 video: input.video,
                 audio: input.audio
             });

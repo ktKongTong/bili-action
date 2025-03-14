@@ -97,7 +97,7 @@ export async function run(): Promise<void> {
     if (input.audio || input.video) {
       core.debug(`开始获取Stream`)
       // 保存视频流，音频流
-      await getAndDownloadStream(videoMeta.cid, {
+      await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
         video: input.video,
         audio: input.audio
       })

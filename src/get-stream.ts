@@ -52,18 +52,24 @@ const getExtByMimeType = (mime: string) => {
   return ext
 }
 
-export const getAndDownloadStream = async (cid: number, opt: StreamOption) => {
-  const streamDetail = await api.getStreamByCid({ cid, ...opt })
+export const getAndDownloadStream = async (
+  cid: number,
+  bvid: string,
+  opt: StreamOption
+) => {
+  const streamDetail = await api.getStreamByCidAndBvid({ cid, bvid, ...opt })
   const stream = streamSchema.parse(streamDetail)
   if (opt.audio) {
-    const url = stream.dash.audio[0].baseUrl
-    const mimeType = stream.dash.audio[0].mimeType
+    const streams = stream.dash.audio
+    const sortedStream = streams.sort((a, b) => a.size - b.size)
+    const { baseUrl: url, mimeType } = sortedStream[0]
     const ext = getExtByMimeType(mimeType)
     await saveStreamTo(url, `output.${ext}`)
   }
   if (opt.video) {
-    const url = stream.dash.video[0].baseUrl
-    const mimeType = stream.dash.video[0].mimeType
+    const streams = stream.dash.audio
+    const sortedStream = streams.sort((a, b) => a.size - b.size)
+    const { baseUrl: url, mimeType } = sortedStream[0]
     const ext = getExtByMimeType(mimeType)
     await saveStreamTo(url, `output.${ext}`)
   }
