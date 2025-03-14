@@ -10,13 +10,43 @@ branding:
 inputs:
   bvid:
     description: video bvid
-    required: true
+    required: false
+  aid:
+    description: video aid
+    required: false
+  cid:
+    description: video cid
+    required: false
+  mid:
+    description: |
+      user mid, if bvid, aid and cid are not provided, 
+      this will be used to get the user's latest video
+    required: false
+  keyword:
+    description: |
+      search keyword, use with `mid`, get user's latest video with keyword
+    required: false
 
+  audio:
+    description: |
+      upload audio
+    required: false
+  video:
+    description: |
+      upload video
+    required: false
+  sessdata:
+    description: |
+      bilibili sessdata
+    required: false
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
-
+  bvid:
+    description: bvid
+  aid:
+    description: aid
+  cid:
+    description: bid
 runs:
   using: node20
   main: dist/index.js
