@@ -53,9 +53,11 @@ export const api = {
     cid: number
     bvid: string
     sessdata?: string
+    proxyHost?: string
   }) => {
+    const host = opt.proxyHost || `https://api.bilibili.com`
     const data = await apiFetch(
-      `https://api.bilibili.com/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`
+      `${host}/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`
     )
     return data
   }

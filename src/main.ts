@@ -12,13 +12,15 @@ type Input = {
   audio?: boolean
   video?: boolean
   sessdata?: string
+  proxyHost?: string
 }
 
 const commonFieldSchema = z.object({
   // output
   audio: z.coerce.boolean().optional(),
   video: z.coerce.boolean().optional(),
-  sessdata: z.string().optional()
+  sessdata: z.string().optional(),
+  proxyHost: z.string().optional()
 })
 
 const inputSchema = z
@@ -40,7 +42,8 @@ function parseInput() {
     keyword: core.getInput('keyword'),
     audio: core.getInput('audio'),
     video: core.getInput('video'),
-    sessdata: core.getInput('sessdata')
+    sessdata: core.getInput('sessdata'),
+    proxyHost: core.getInput('proxy-stream-host')
   }
   const parsedInput = inputSchema.parse(input)
 
@@ -99,7 +102,8 @@ export async function run(): Promise<void> {
       // 保存视频流，音频流
       await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
         video: input.video,
-        audio: input.audio
+        audio: input.audio,
+        proxyHost: input.proxyHost
       })
       core.debug(`Stream获取完成`)
     }

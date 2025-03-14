@@ -36,6 +36,9 @@ inputs:
     description: |
       bilibili sessdata
     required: false
+  proxy-stream-host:
+    description: proxy stream api host, may return 404
+    required: false
 # Define your outputs here.
 outputs:
   bvid:

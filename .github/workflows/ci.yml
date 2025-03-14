@@ -35,6 +35,7 @@ jobs:
         id: test-get-stream-by-user-action
         uses: ./
         with:
+          proxy-stream-host: https://posh-stoat-85.deno.dev
           mid: 316568752
           keyword: 睡前消息
           audio: true

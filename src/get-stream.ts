@@ -6,6 +6,7 @@ import { finished } from 'node:stream/promises'
 type StreamOption = {
   video?: boolean
   audio?: boolean
+  proxyHost?: string
 }
 
 const dashItemSchema = z.object({

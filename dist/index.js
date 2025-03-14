@@ -31691,7 +31691,8 @@ const api = {
         return data;
     },
     getStreamByCidAndBvid: async (opt) => {
-        const data = await apiFetch(`https://api.bilibili.com/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`);
+        const host = opt.proxyHost || `https://api.bilibili.com`;
+        const data = await apiFetch(`${host}/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`);
         return data;
     }
 };
@@ -31944,7 +31945,8 @@ const commonFieldSchema = z.object({
     // output
     audio: z.coerce.boolean().optional(),
     video: z.coerce.boolean().optional(),
-    sessdata: z.string().optional()
+    sessdata: z.string().optional(),
+    proxyHost: z.string().optional()
 });
 const inputSchema = z
     .object({
@@ -31964,7 +31966,8 @@ function parseInput() {
         keyword: coreExports.getInput('keyword'),
         audio: coreExports.getInput('audio'),
         video: coreExports.getInput('video'),
-        sessdata: coreExports.getInput('sessdata')
+        sessdata: coreExports.getInput('sessdata'),
+        proxyHost: coreExports.getInput('proxy-stream-host')
     };
     const parsedInput = inputSchema.parse(input);
     return parsedInput;
@@ -32011,7 +32014,8 @@ async function run() {
             // 保存视频流，音频流
             await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
                 video: input.video,
-                audio: input.audio
+                audio: input.audio,
+                proxyHost: input.proxyHost
             });
             coreExports.debug(`Stream获取完成`);
         }
