@@ -24,13 +24,14 @@ jobs:
         with:
           aid: 2325306
 
-      #      - name: Test Download Local Action
-      #        id: test-stream-action
-      #        uses: ./
-      #        with:
-      #          aid: 2325306
-      #          audio: true
-      #
+      - name: Test Download Local Action
+        id: test-stream-action
+        uses: ./
+        with:
+          proxy-stream-host: https://posh-stoat-85.deno.dev
+          aid: 2325306
+          audio: true
+
       - name: Test Download Local Action
         id: test-get-stream-by-user-action
         uses: ./
@@ -49,5 +50,5 @@ jobs:
       - name: Print Output
         id: output
         run: |
+          echo "${{ toJSON(steps.test-action.outputs) }}"
           echo "${{ steps.test-action.outputs.bvid }}"
-          echo "${{ steps.test-action.outputs.title }}"
