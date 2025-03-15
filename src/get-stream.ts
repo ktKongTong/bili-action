@@ -6,6 +6,7 @@ import { Readable } from 'node:stream'
 import { finished } from 'node:stream/promises'
 import { VideoDetail } from './bili-meta.js'
 import format from 'python-format-js'
+import path from 'node:path'
 type StreamPathOpt = {
   audioFileTemplate?: string
   videoFileTemplate?: string
@@ -47,7 +48,17 @@ const streamSchema = z.object({
   dash: dashSchema
 })
 
+function ensureDirectoryExistence(filePath: string) {
+  var dirname = path.dirname(filePath)
+  if (fs.existsSync(dirname)) {
+    return true
+  }
+  ensureDirectoryExistence(dirname)
+  fs.mkdirSync(dirname)
+}
+
 const saveStreamTo = async (url: string, destination: string) => {
+  ensureDirectoryExistence(destination)
   const res = await fetch(url)
   const fileStream = fs.createWriteStream(destination, { flags: 'wx' })
   await finished(Readable.fromWeb(res.body!).pipe(fileStream))
