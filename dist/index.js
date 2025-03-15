@@ -32245,6 +32245,7 @@ async function run() {
         coreExports.debug(`成功获取视频信息: ${JSON.stringify(videoMeta)}`);
         coreExports.debug(`开始将视频信息写入output`);
         handleData(videoMeta);
+        coreExports.setOutput('video', videoMeta);
         coreExports.debug(`output写入完成`);
         if (input.audio || input.video) {
             coreExports.debug(`开始获取Stream`);

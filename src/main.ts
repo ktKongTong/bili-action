@@ -102,6 +102,7 @@ export async function run(): Promise<void> {
     core.debug(`成功获取视频信息: ${JSON.stringify(videoMeta)}`)
     core.debug(`开始将视频信息写入output`)
     handleData(videoMeta)
+    core.setOutput('video', videoMeta)
     core.debug(`output写入完成`)
     if (input.audio || input.video) {
       core.debug(`开始获取Stream`)

@@ -52,3 +52,4 @@ jobs:
           echo "${{ steps.test-action.outputs.bvid }}"
           echo "${{ steps.test-action.outputs.title }}"
           echo "${{ toJSON(steps.test-action.outputs.owner) }}"
+          echo '${{ steps.test-action.outputs.video }}'
