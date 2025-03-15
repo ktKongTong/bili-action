@@ -48,4 +48,6 @@ jobs:
 
       - name: Print Output
         id: output
-        run: echo "${{ steps.test-action.outputs.bvid }}"
+        run: |
+          echo "${{ steps.test-action.outputs.bvid }}"
+          echo "${{ steps.test-action.outputs.title }}"
