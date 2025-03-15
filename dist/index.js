@@ -32277,11 +32277,11 @@ async function run() {
 //   '62004': '稿件审核中',
 //   '62012': '仅UP主自己可见'
 // }
-const handleArray = (data, key) => {
-    for (const idx of data) {
-        handleItem(data[idx], `${key}[${idx}]`);
-    }
-};
+// const handleArray = (data: any[], key: string) => {
+//   for (const idx of data) {
+//     handleItem(data[idx], `${key}[${idx}]`)
+//   }
+// }
 const handleItem = (data, key) => {
     if (data == null)
         return;
@@ -32290,17 +32290,15 @@ const handleItem = (data, key) => {
         case 'number':
         case 'string':
         case 'boolean':
-            coreExports.debug(`设置输出: ${key}, ${data}`);
+        case 'object':
+            coreExports.debug(`设置输出: ${key}, ${JSON.stringify(data)}`);
             coreExports.setOutput(key, data);
             break;
-        case 'object':
-            if (data instanceof Array) {
-                handleArray(data, key);
-            }
-            else {
-                handleData(data, key);
-            }
-            break;
+        // if (data instanceof Array) {
+        //   handleArray(data, key)
+        // } else {
+        //   handleData(data, key)
+        // }
         case 'undefined':
             return;
         case 'function':
@@ -32309,10 +32307,10 @@ const handleItem = (data, key) => {
     }
 };
 const handleData = (data, prefix = '') => {
-    const getKey = (key) => prefix + `${prefix === '' ? '' : '.'}` + key;
+    // const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
     const keys = Object.keys(data);
     for (const key of keys) {
-        handleItem(data[key], getKey(key));
+        handleItem(data[key], key);
     }
 };
 

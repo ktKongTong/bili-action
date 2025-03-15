@@ -150,11 +150,11 @@ const handleItem = (data: any, key: string) => {
       core.debug(`设置输出: ${key}, ${JSON.stringify(data)}`)
       core.setOutput(key, data)
       break
-      // if (data instanceof Array) {
-      //   handleArray(data, key)
-      // } else {
-      //   handleData(data, key)
-      // }
+    // if (data instanceof Array) {
+    //   handleArray(data, key)
+    // } else {
+    //   handleData(data, key)
+    // }
     case 'undefined':
       return
     case 'function':
@@ -164,9 +164,9 @@ const handleItem = (data: any, key: string) => {
 }
 
 const handleData = (data: Record<string, any>, prefix: string = '') => {
-  const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
+  // const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
   const keys = Object.keys(data)
   for (const key of keys) {
-    handleItem(data[key], getKey(key))
+    handleItem(data[key], key)
   }
 }
