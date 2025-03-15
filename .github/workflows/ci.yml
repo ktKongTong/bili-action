@@ -46,9 +46,12 @@ jobs:
           name: output
           path: |
             output/*
-
       - name: Print Output
         id: output
         run: |
-          echo "${{ toJSON(steps.test-action.outputs) }}"
+          env
           echo "${{ steps.test-action.outputs.bvid }}"
+          echo "${{ steps.test-action.outputs.title }}"
+          echo "${{ toJSON(steps.test-action.outputs.owner) }}"
+          echo "${{ toJSON(steps.test-action.outputs) }}"
+
