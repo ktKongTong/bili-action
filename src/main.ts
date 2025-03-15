@@ -13,6 +13,8 @@ type Input = {
   video?: boolean
   sessdata?: string
   proxyHost?: string
+  audioFileTemplate?: string
+  videoFileTemplate?: string
 }
 
 const commonFieldSchema = z.object({
@@ -20,7 +22,9 @@ const commonFieldSchema = z.object({
   audio: z.coerce.boolean().optional(),
   video: z.coerce.boolean().optional(),
   sessdata: z.string().optional(),
-  proxyHost: z.string().optional()
+  proxyHost: z.string().optional(),
+  audioFileTemplate: z.string().optional(),
+  videoFileTemplate: z.string().optional()
 })
 
 const inputSchema = z
@@ -43,7 +47,9 @@ function parseInput() {
     audio: core.getInput('audio'),
     video: core.getInput('video'),
     sessdata: core.getInput('sessdata'),
-    proxyHost: core.getInput('proxy-stream-host')
+    proxyHost: core.getInput('proxy-stream-host'),
+    audioFileTemplate: core.getInput('audio-file-template'),
+    videoFileTemplate: core.getInput('video-file-template')
   }
   const parsedInput = inputSchema.parse(input)
 
@@ -103,7 +109,12 @@ export async function run(): Promise<void> {
       await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
         video: input.video,
         audio: input.audio,
-        proxyHost: input.proxyHost
+        proxyHost: input.proxyHost,
+        videoDetail: videoMeta,
+        streamOpt: {
+          videoFileTemplate: input.videoFileTemplate,
+          audioFileTemplate: input.audioFileTemplate
+        }
       })
       core.debug(`Stream获取完成`)
     }

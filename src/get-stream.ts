@@ -1,12 +1,22 @@
 import { api } from './api.js'
 import z from 'zod'
+import * as core from '@actions/core'
 import fs from 'fs'
 import { Readable } from 'node:stream'
 import { finished } from 'node:stream/promises'
+import { VideoDetail } from './bili-meta.js'
+import format from 'python-format-js'
+type StreamPathOpt = {
+  audioFileTemplate?: string
+  videoFileTemplate?: string
+}
+
 type StreamOption = {
+  videoDetail: VideoDetail
   video?: boolean
   audio?: boolean
   proxyHost?: string
+  streamOpt: StreamPathOpt
 }
 
 const dashItemSchema = z.object({
@@ -23,6 +33,9 @@ const dashItemSchema = z.object({
   size: z.number().optional(),
   id: z.number()
 })
+
+type Stream = z.infer<typeof streamSchema>['dash']['audio'][number]
+
 const dashSchema = z.object({
   video: z.array(dashItemSchema),
   audio: z.array(dashItemSchema),
@@ -53,6 +66,41 @@ const getExtByMimeType = (mime: string) => {
   return ext
 }
 
+const getTypeByMime = (mime: string) => {
+  if (mime.startsWith('video')) return 'video'
+  if (mime.startsWith('audio')) return 'audio'
+  throw new Error(`Unknown mime: ${mime}`)
+}
+
+const getFilepath = (
+  stream: Stream,
+  metadata: VideoDetail,
+  streamOpt: StreamPathOpt
+) => {
+  const { mimeType } = stream
+  const param = { ...metadata, stream }
+
+  const ext = getExtByMimeType(mimeType)
+  const type = getTypeByMime(mimeType)
+  let template = `output/output.${ext}`
+  let res = template
+  if (mimeType.startsWith('video') && streamOpt.videoFileTemplate)
+    template = streamOpt.videoFileTemplate
+  if (mimeType.startsWith('audio') && streamOpt.audioFileTemplate)
+    template = streamOpt.audioFileTemplate
+
+  try {
+    res = format(template, param)
+  } catch (e) {
+    core.error(
+      `使用模版获取Path出错，template[${template}],param: ${JSON.stringify(param)}`
+    )
+    core.info(`使用默认模版`)
+  }
+  core.setOutput(`${type}-output-path`, res)
+  return res
+}
+
 export const getAndDownloadStream = async (
   cid: number,
   bvid: string,
@@ -60,18 +108,16 @@ export const getAndDownloadStream = async (
 ) => {
   const streamDetail = await api.getStreamByCidAndBvid({ cid, bvid, ...opt })
   const stream = streamSchema.parse(streamDetail)
-  if (opt.audio) {
-    const streams = stream.dash.audio
-    const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth)
-    const { baseUrl: url, mimeType } = sortedStream[0]
-    const ext = getExtByMimeType(mimeType)
-    await saveStreamTo(url, `output.${ext}`)
-  }
-  if (opt.video) {
-    const streams = stream.dash.audio
-    const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth)
-    const { baseUrl: url, mimeType } = sortedStream[0]
-    const ext = getExtByMimeType(mimeType)
-    await saveStreamTo(url, `output.${ext}`)
+  let streams = []
+
+  if (opt.audio) streams.push(stream.dash.audio)
+  if (opt.video) streams.push(stream.dash.video)
+
+  for (const stream of streams) {
+    const sortedStream = stream.sort((a, b) => a.bandwidth - b.bandwidth)
+    const { baseUrl } = sortedStream[0]
+    core.debug(`handling stream: ${JSON.stringify(sortedStream[0])}`)
+    const path = getFilepath(sortedStream[0], opt.videoDetail, opt.streamOpt)
+    await saveStreamTo(baseUrl, path)
   }
 }

@@ -39,7 +39,12 @@ inputs:
   proxy-stream-host:
     description: proxy stream api host, may return 404
     required: false
-# Define your outputs here.
+  audio-file-template:
+    description: audio file path template, use python like formating
+    required: false
+  video-file-template:
+    description: video file path template, use python like formating
+    required: false
 outputs:
   bvid:
     description: bvid

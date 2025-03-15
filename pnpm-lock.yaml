@@ -10,6 +10,9 @@ importers:
       '@actions/core':
         specifier: ^1.11.1
         version: 1.11.1
+      python-format-js:
+        specifier: ^1.4.3
+        version: 1.4.3
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -4508,6 +4511,12 @@ packages:
         integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==
       }
 
+  python-format-js@1.4.3:
+    resolution:
+      {
+        integrity: sha512-0iK5zP5HMf4F3Xc3Uo6hggPu4ylEQCKNoLXUYe3S1YfYkFG6DxGDO3KozCrySntAZTPmP9yRI+eMq0MXweHqIw==
+      }
+
   queue-microtask@1.2.3:
     resolution:
       {
@@ -8547,6 +8556,8 @@ snapshots:
   punycode@2.3.1: {}
 
   pure-rand@6.1.0: {}
+
+  python-format-js@1.4.3: {}
 
   queue-microtask@1.2.3: {}
 

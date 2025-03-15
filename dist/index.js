@@ -31,6 +31,10 @@ import { finished } from 'node:stream/promises';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
 var core = {};
 
 var command = {};
@@ -31871,15 +31875,198 @@ const archiveSchema = z.object({
     })
 });
 async function getBiliMetaByUser(opt) {
-    //
     const archives = await api.getArchiveByUser(opt);
     const parsedArchives = archiveSchema.parse(archives);
     const bvid = parsedArchives.archives[0].bvid;
-    const data = getBiliMetaById({
-        bvid: bvid
-    });
+    const data = getBiliMetaById({ bvid: bvid });
     return data;
 }
+
+var pythonFormatJs;
+var hasRequiredPythonFormatJs;
+
+function requirePythonFormatJs () {
+	if (hasRequiredPythonFormatJs) return pythonFormatJs;
+	hasRequiredPythonFormatJs = 1;
+	Object.defineProperty(String.prototype, "format", {
+	  value: function (...args_) {
+	    // Create variables
+	    let self = this;
+	    let __patterns__ = self.match(/({.*?})/g);
+	    const {
+	      REF,
+	      FILL_CHAR,
+	      MASK_NUMBER,
+	      ALIGN_OP,
+	      CROP_SIZE,
+	      FRACTION,
+	      TYPE_VAR,
+	    } = {
+	      REF: 1,
+	      FILL_CHAR: 2,
+	      MASK_NUMBER: 3,
+	      ALIGN_OP: 4,
+	      CROP_SIZE: 5,
+	      FRACTION: 7,
+	      TYPE_VAR: 8,
+	    };
+	    const DEFAULT_PLACE = 6;
+	    const ALL_REGEXP =
+	      /{(\w+)?:([^>\^<\d#]|0)?([#%,])?([>^<\.])?(\d+)?(\.)?(\d+)?([eEfFgGdxXobn#%])?}/g;
+	    const regExpBasic = /{\[?(\w+)\]?}/; // it's not best solution
+	    const isObject = typeof args_[0] === "object";
+	    // types/use logic
+	    __patterns__?.map((pattern, patt_index) => {
+	      const kargs = ALL_REGEXP.exec(pattern) || ALL_REGEXP.exec(pattern);
+	      const wargs = regExpBasic.exec(pattern);
+
+	      // Insert values (one 2 one / array / object)
+	      const INDEX_VAR = (wargs ? wargs[REF] : kargs ? kargs[REF] : patt_index) || patt_index;
+	      let NATUAL_VALUE = isObject ? args_[0][INDEX_VAR] : args_[INDEX_VAR];
+	      let ACTUAL_VALUE = isObject ? args_[0][INDEX_VAR] : args_[INDEX_VAR];
+
+	      // Verify sintax/semantic
+	      if (ACTUAL_VALUE === null || ACTUAL_VALUE === undefined)
+	        throw new Error(
+	          `Replacement index ${INDEX_VAR} out of range for positional args tuple`
+	        );
+	      if (kargs) {
+	        // If TYPE_VAR is not defined and the first argument is a number, pad a string should from left, so set TYPE_VAR to "d"
+	        if (kargs[TYPE_VAR] === undefined && typeof ACTUAL_VALUE === "number") {
+	          kargs[TYPE_VAR] = "d";
+	        }
+	        const LETTER =
+	          (!kargs[FILL_CHAR]
+	            ? false
+	            : !kargs[ALIGN_OP] &&
+	              [..."FfbefoxXn"].includes(kargs[FILL_CHAR].toLowerCase())
+	            ? kargs[FILL_CHAR]
+	            : kargs[TYPE_VAR]) || kargs[TYPE_VAR];
+	        //  padronaze
+	        if (LETTER) {
+	          const floatSize = pattern.includes(".")
+	            ? Number(kargs[FRACTION] || kargs[CROP_SIZE])
+	            : DEFAULT_PLACE;
+	          switch (LETTER) {
+	            case "E":
+	              ACTUAL_VALUE =
+	                ACTUAL_VALUE.toExponential(DEFAULT_PLACE).toUpperCase();
+	              break;
+	            case "e":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toExponential(DEFAULT_PLACE);
+	              break;
+	            case "X":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toString(16).toUpperCase();
+	              break;
+	            case "x":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toString(16); // Hexadecimal
+	              break;
+	            case "b":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toString(2); // Binary
+	              break;
+	            case "f":
+	            case "F":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toFixed(floatSize);
+	              break;
+	            case "o":
+	              ACTUAL_VALUE = ACTUAL_VALUE.toString(8); // Octal
+	              break;
+	          }
+	          //  mask
+	          switch (kargs[MASK_NUMBER]) {
+	            case "#":
+	              const MASK = {
+	                x: "0x",
+	                X: "0X",
+	                o: "0o",
+	                b: "0b",
+	              }[LETTER];
+	              ACTUAL_VALUE = MASK + ACTUAL_VALUE;
+	              break;
+	          }
+	        }
+	        // signal
+	        if (
+	          [..." +-,%"].includes(kargs[FILL_CHAR]) &&
+	          typeof NATUAL_VALUE === "number"
+	        ) {
+	          ACTUAL_VALUE = ACTUAL_VALUE.toString().replace("-", "");
+	          if (NATUAL_VALUE >= 0)
+	            switch (kargs[FILL_CHAR]) {
+	              case "+":
+	                ACTUAL_VALUE = "+" + ACTUAL_VALUE;
+	                break;
+	              case " ":
+	                ACTUAL_VALUE = " " + ACTUAL_VALUE;
+	                break;
+	              case ",":
+	                ACTUAL_VALUE = NATUAL_VALUE.toString()
+	                  .split(/(?=(?:...)*$)/)
+	                  .join(kargs[FILL_CHAR]);
+	                break;
+	              case "%":
+	                ACTUAL_VALUE =
+	                  (NATUAL_VALUE * 100).toFixed(
+	                    kargs[FRACTION] || DEFAULT_PLACE
+	                  ) + "%";
+	                break;
+	            }
+	          else ACTUAL_VALUE = "-" + ACTUAL_VALUE;
+	        }
+	        // space / order / trim
+	        if (kargs[CROP_SIZE]) {
+	          ACTUAL_VALUE = ACTUAL_VALUE.toString();
+	          const FILL_ELEMENT = kargs[FILL_CHAR] || " ";
+	          const SIZE_STRING = ACTUAL_VALUE.length;
+	          const SIZE_ARG = kargs[CROP_SIZE];
+	          const FILL_LENGTH = SIZE_STRING > SIZE_ARG ? SIZE_STRING : SIZE_ARG;
+	          const FILL = FILL_ELEMENT.repeat(FILL_LENGTH);
+
+	          switch (kargs[ALIGN_OP] || kargs[FILL_CHAR]) {
+	            case "<":
+	              ACTUAL_VALUE = ACTUAL_VALUE.padEnd(FILL_LENGTH, FILL_ELEMENT);
+	              break;
+	            case ".":
+	              if (!(LETTER && /[fF]/.test(LETTER)))
+	                ACTUAL_VALUE = ACTUAL_VALUE.slice(0, SIZE_ARG);
+	              break;
+	            case ">":
+	              ACTUAL_VALUE = ACTUAL_VALUE.padStart(FILL_LENGTH, FILL_ELEMENT);
+	              break;
+	            case "^":
+	              const length_start = Math.floor((FILL_LENGTH - SIZE_STRING) / 2);
+	              const string_start =
+	                length_start > 0
+	                  ? FILL_ELEMENT.repeat(length_start) + ACTUAL_VALUE
+	                  : ACTUAL_VALUE;
+
+	              ACTUAL_VALUE = FILL.replace(
+	                RegExp(`.{${string_start.length}}`),
+	                string_start
+	              );
+	              break;
+	            default:
+	              ACTUAL_VALUE = LETTER
+	                ? ACTUAL_VALUE.padStart(FILL_LENGTH, FILL_ELEMENT)
+	                : ACTUAL_VALUE.padEnd(FILL_LENGTH, FILL_ELEMENT);
+	              break;
+	          }
+	        }
+	      }
+
+	      // SET Definitive value
+	      self = self.replace(pattern, ACTUAL_VALUE);
+	    });
+
+	    return self;
+	  },
+	});
+	pythonFormatJs = (inputString, ...param) => inputString.format(...param);
+	return pythonFormatJs;
+}
+
+var pythonFormatJsExports = requirePythonFormatJs();
+var format = /*@__PURE__*/getDefaultExportFromCjs(pythonFormatJsExports);
 
 const dashItemSchema = z.object({
     start_with_sap: z.number(),
@@ -31922,22 +32109,48 @@ const getExtByMimeType = (mime) => {
     }
     return ext;
 };
+const getTypeByMime = (mime) => {
+    if (mime.startsWith('video'))
+        return 'video';
+    if (mime.startsWith('audio'))
+        return 'audio';
+    throw new Error(`Unknown mime: ${mime}`);
+};
+const getFilepath = (stream, metadata, streamOpt) => {
+    const { mimeType } = stream;
+    const param = { ...metadata, stream };
+    const ext = getExtByMimeType(mimeType);
+    const type = getTypeByMime(mimeType);
+    let template = `output/output.${ext}`;
+    let res = template;
+    if (mimeType.startsWith('video') && streamOpt.videoFileTemplate)
+        template = streamOpt.videoFileTemplate;
+    if (mimeType.startsWith('audio') && streamOpt.audioFileTemplate)
+        template = streamOpt.audioFileTemplate;
+    try {
+        res = format(template, param);
+    }
+    catch (e) {
+        coreExports.error(`使用模版获取Path出错，template[${template}],param: ${JSON.stringify(param)}`);
+        coreExports.info(`使用默认模版`);
+    }
+    coreExports.setOutput(`${type}-output-path`, res);
+    return res;
+};
 const getAndDownloadStream = async (cid, bvid, opt) => {
     const streamDetail = await api.getStreamByCidAndBvid({ cid, bvid, ...opt });
     const stream = streamSchema.parse(streamDetail);
-    if (opt.audio) {
-        const streams = stream.dash.audio;
-        const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth);
-        const { baseUrl: url, mimeType } = sortedStream[0];
-        const ext = getExtByMimeType(mimeType);
-        await saveStreamTo(url, `output.${ext}`);
-    }
-    if (opt.video) {
-        const streams = stream.dash.audio;
-        const sortedStream = streams.sort((a, b) => a.bandwidth - b.bandwidth);
-        const { baseUrl: url, mimeType } = sortedStream[0];
-        const ext = getExtByMimeType(mimeType);
-        await saveStreamTo(url, `output.${ext}`);
+    let streams = [];
+    if (opt.audio)
+        streams.push(stream.dash.audio);
+    if (opt.video)
+        streams.push(stream.dash.video);
+    for (const stream of streams) {
+        const sortedStream = stream.sort((a, b) => a.bandwidth - b.bandwidth);
+        const { baseUrl } = sortedStream[0];
+        coreExports.debug(`handling stream: ${JSON.stringify(sortedStream[0])}`);
+        const path = getFilepath(sortedStream[0], opt.videoDetail, opt.streamOpt);
+        await saveStreamTo(baseUrl, path);
     }
 };
 
@@ -31946,7 +32159,9 @@ const commonFieldSchema = z.object({
     audio: z.coerce.boolean().optional(),
     video: z.coerce.boolean().optional(),
     sessdata: z.string().optional(),
-    proxyHost: z.string().optional()
+    proxyHost: z.string().optional(),
+    audioFileTemplate: z.string().optional(),
+    videoFileTemplate: z.string().optional()
 });
 const inputSchema = z
     .object({
@@ -31967,7 +32182,9 @@ function parseInput() {
         audio: coreExports.getInput('audio'),
         video: coreExports.getInput('video'),
         sessdata: coreExports.getInput('sessdata'),
-        proxyHost: coreExports.getInput('proxy-stream-host')
+        proxyHost: coreExports.getInput('proxy-stream-host'),
+        audioFileTemplate: coreExports.getInput('audio-file-template'),
+        videoFileTemplate: coreExports.getInput('video-file-template')
     };
     const parsedInput = inputSchema.parse(input);
     return parsedInput;
@@ -32015,7 +32232,12 @@ async function run() {
             await getAndDownloadStream(videoMeta.cid, videoMeta.bvid, {
                 video: input.video,
                 audio: input.audio,
-                proxyHost: input.proxyHost
+                proxyHost: input.proxyHost,
+                videoDetail: videoMeta,
+                streamOpt: {
+                    videoFileTemplate: input.videoFileTemplate,
+                    audioFileTemplate: input.audioFileTemplate
+                }
             });
             coreExports.debug(`Stream获取完成`);
         }

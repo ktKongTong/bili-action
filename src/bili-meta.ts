@@ -191,12 +191,9 @@ export async function getBiliMetaByUser(opt: {
   mid: number
   keyword?: string
 }) {
-  //
   const archives = await api.getArchiveByUser(opt)
   const parsedArchives = archiveSchema.parse(archives)
   const bvid = parsedArchives.archives[0].bvid
-  const data = getBiliMetaById({
-    bvid: bvid
-  })
+  const data = getBiliMetaById({ bvid: bvid })
   return data
 }
