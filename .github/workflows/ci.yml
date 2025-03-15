@@ -39,12 +39,12 @@ jobs:
           mid: 316568752
           keyword: 睡前消息
           audio: true
-
+          audio-file-template: 'output/{bvid}.mp4'
       - uses: actions/upload-artifact@v4
         with:
-          name: output.audio.mp4
+          name: output
           path: |
-            *.audio.mp4
+            output/*
 
       - name: Print Output
         id: output
