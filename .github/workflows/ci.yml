@@ -49,8 +49,6 @@ jobs:
       - name: Print Output
         id: output
         run: |
-          env
           echo "${{ steps.test-action.outputs.bvid }}"
           echo "${{ steps.test-action.outputs.title }}"
           echo "${{ toJSON(steps.test-action.outputs.owner) }}"
-          echo "${{ toJSON(steps.test-action.outputs) }}"
