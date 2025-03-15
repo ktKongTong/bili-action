@@ -1,7 +1,7 @@
 {
   "name": "bili-action",
   "description": "GitHub Actions for bilibili",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "kt",
   "type": "module",
   "private": true,
