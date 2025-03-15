@@ -133,11 +133,11 @@ export async function run(): Promise<void> {
 //   '62012': '仅UP主自己可见'
 // }
 
-const handleArray = (data: any[], key: string) => {
-  for (const idx of data) {
-    handleItem(data[idx], `${key}[${idx}]`)
-  }
-}
+// const handleArray = (data: any[], key: string) => {
+//   for (const idx of data) {
+//     handleItem(data[idx], `${key}[${idx}]`)
+//   }
+// }
 
 const handleItem = (data: any, key: string) => {
   if (data == null) return
@@ -146,16 +146,15 @@ const handleItem = (data: any, key: string) => {
     case 'number':
     case 'string':
     case 'boolean':
-      core.debug(`设置输出: ${key}, ${data}`)
+    case 'object':
+      core.debug(`设置输出: ${key}, ${JSON.stringify(data)}`)
       core.setOutput(key, data)
       break
-    case 'object':
-      if (data instanceof Array) {
-        handleArray(data, key)
-      } else {
-        handleData(data, key)
-      }
-      break
+      // if (data instanceof Array) {
+      //   handleArray(data, key)
+      // } else {
+      //   handleData(data, key)
+      // }
     case 'undefined':
       return
     case 'function':
