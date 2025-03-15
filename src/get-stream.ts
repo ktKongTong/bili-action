@@ -57,9 +57,26 @@ function ensureDirectoryExistence(filePath: string) {
   fs.mkdirSync(dirname)
 }
 
-const saveStreamTo = async (url: string, destination: string) => {
+const saveStreamTo = async (
+  url: string,
+  backupUrls: string[],
+  destination: string
+) => {
   ensureDirectoryExistence(destination)
   const res = await fetch(url)
+  if (!res.ok) {
+    const [backup, ...rest] = backupUrls
+    if (backup) {
+      core.info(
+        `failed to fetch stream, use other backup stream url: ${backup}`
+      )
+      return await saveStreamTo(backup, rest, destination)
+    } else {
+      throw new Error(
+        `failed to fetch stream: no other backup url available, ${JSON.stringify(res.body)}`
+      )
+    }
+  }
   const fileStream = fs.createWriteStream(destination, { flags: 'wx' })
   await finished(Readable.fromWeb(res.body!).pipe(fileStream))
 }
@@ -126,9 +143,9 @@ export const getAndDownloadStream = async (
 
   for (const stream of streams) {
     const sortedStream = stream.sort((a, b) => a.bandwidth - b.bandwidth)
-    const { baseUrl } = sortedStream[0]
+    const { baseUrl, backupUrl } = sortedStream[0]
     core.debug(`handling stream: ${JSON.stringify(sortedStream[0])}`)
     const path = getFilepath(sortedStream[0], opt.videoDetail, opt.streamOpt)
-    await saveStreamTo(baseUrl, path)
+    await saveStreamTo(baseUrl, backupUrl, path)
   }
 }
