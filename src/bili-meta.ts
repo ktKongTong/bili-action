@@ -80,7 +80,7 @@ const detailSchema = z.object({
         biz_id: z.number().describe('默认为0，当type为1时，表示被@的用户id')
       })
     )
-    .optional()
+    .nullish()
     .describe('视频简介V2'),
   state: z
     .number()
