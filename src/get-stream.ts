@@ -7,7 +7,7 @@ import { finished } from 'node:stream/promises'
 import { VideoDetail } from './bili-meta.js'
 import format from 'python-format-js'
 import path from 'node:path'
-import { ofetch } from "ofetch";
+import { ofetch } from 'ofetch'
 type StreamPathOpt = {
   audioFileTemplate?: string
   videoFileTemplate?: string
