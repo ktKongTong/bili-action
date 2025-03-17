@@ -7,6 +7,7 @@ import { finished } from 'node:stream/promises'
 import { VideoDetail } from './bili-meta.js'
 import format from 'python-format-js'
 import path from 'node:path'
+import { ofetch } from "ofetch";
 type StreamPathOpt = {
   audioFileTemplate?: string
   videoFileTemplate?: string
@@ -63,7 +64,8 @@ const saveStreamTo = async (
   destination: string
 ) => {
   ensureDirectoryExistence(destination)
-  const res = await fetch(url)
+
+  const res = await ofetch.raw(url, { retry: 3 })
   if (!res.ok) {
     const [backup, ...rest] = backupUrls
     if (backup) {
