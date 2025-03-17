@@ -162,7 +162,7 @@ export async function getBiliMetaById(opt: {
   return data
 }
 
-const archiveItemSchema = z.object({
+export const archiveItemSchema = z.object({
   aid: z.coerce.string(),
   title: z.string(),
   pubdate: z.number(),
@@ -187,13 +187,43 @@ const archiveSchema = z.object({
   })
 })
 
+async function getAllBiliMetaByUser(opt: { mid: number; keyword?: string }) {
+  let page = 1
+  const handlePage = async (page: number) => {
+    const archives = await api.getArchiveByUser({ ...opt, page })
+    return archiveSchema.parse(archives)
+  }
+  let curPage = await handlePage(page)
+  const results = []
+  while (curPage.archives.length == curPage.page.size) {
+    if (results.length > 1000) {
+      throw new Error('视频数超过 1000，请适当缩小查询范围')
+    }
+    results.push(...curPage.archives)
+    curPage = await handlePage(++page)
+  }
+  results.push(...curPage.archives)
+  return results
+}
+
 export async function getBiliMetaByUser(opt: {
   mid: number
   keyword?: string
+  batch?: boolean
 }) {
-  const archives = await api.getArchiveByUser(opt)
-  const parsedArchives = archiveSchema.parse(archives)
-  const bvid = parsedArchives.archives[0].bvid
-  const data = getBiliMetaById({ bvid: bvid })
-  return data
+  let bvid: string | undefined
+  let archives: any[] = []
+  if (opt.batch) {
+    archives = await getAllBiliMetaByUser(opt)
+  } else {
+    const _archives = await api.getArchiveByUser({ ...opt, page: 1 })
+    const parsedArchives = archiveSchema.parse(_archives)
+    archives = parsedArchives.archives
+  }
+  bvid = archives[0].bvid
+  const data = await getBiliMetaById({ bvid: bvid })
+  return {
+    ...data,
+    batch: archives
+  }
 }

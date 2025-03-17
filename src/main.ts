@@ -9,6 +9,8 @@ type Input = {
   cid?: number
   mid?: number
   keyword?: string
+  page?: number
+  batch?: boolean
   audio?: boolean
   video?: boolean
   sessdata?: string
@@ -33,7 +35,8 @@ const inputSchema = z
     aid: z.coerce.number().optional(),
     cid: z.coerce.number().optional(),
     mid: z.coerce.number().optional(),
-    keyword: z.string().optional()
+    keyword: z.string().optional(),
+    batch: z.coerce.boolean().optional()
   })
   .merge(commonFieldSchema)
 
@@ -44,12 +47,14 @@ function parseInput() {
     cid: core.getInput('cid'),
     mid: core.getInput('mid'),
     keyword: core.getInput('keyword'),
+    page: core.getInput('page'),
     audio: core.getInput('audio'),
     video: core.getInput('video'),
     sessdata: core.getInput('sessdata'),
     proxyHost: core.getInput('proxy-stream-host'),
     audioFileTemplate: core.getInput('audio-file-template'),
-    videoFileTemplate: core.getInput('video-file-template')
+    videoFileTemplate: core.getInput('video-file-template'),
+    batch: core.getInput('batch')
   }
   const parsedInput = inputSchema.parse(input)
 
@@ -66,7 +71,11 @@ const userStrategy: Strategy = {
   name: '按照关键字和用户ID获取最新视频',
   cond: (input: Input) => input.mid,
   getter: async (input: Input) =>
-    await getBiliMetaByUser({ mid: input.mid!, keyword: input.keyword })
+    await getBiliMetaByUser({
+      mid: input.mid!,
+      keyword: input.keyword,
+      batch: input.batch ?? false
+    })
 }
 
 const idStrategy = {
@@ -124,21 +133,6 @@ export async function run(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
-// const reasonMap = {
-//   '0': '成功',
-//   '-400': '请求错误',
-//   '-403': '权限不足',
-//   '-404': '无视频',
-//   '62002': '稿件不可见',
-//   '62004': '稿件审核中',
-//   '62012': '仅UP主自己可见'
-// }
-
-// const handleArray = (data: any[], key: string) => {
-//   for (const idx of data) {
-//     handleItem(data[idx], `${key}[${idx}]`)
-//   }
-// }
 
 const handleItem = (data: any, key: string) => {
   if (data == null) return
@@ -151,11 +145,6 @@ const handleItem = (data: any, key: string) => {
       core.debug(`设置输出: ${key}, ${JSON.stringify(data)}`)
       core.setOutput(key, data)
       break
-    // if (data instanceof Array) {
-    //   handleArray(data, key)
-    // } else {
-    //   handleData(data, key)
-    // }
     case 'undefined':
       return
     case 'function':

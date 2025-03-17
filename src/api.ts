@@ -42,13 +42,16 @@ export const api = {
   },
 
   // https://socialsisteryi.github.io/bilibili-API-collect/docs/video/collection.html#根据关键词查找视频
-  getArchiveByUser: async (opt: { mid: number; keyword?: string }) => {
+  getArchiveByUser: async (opt: {
+    mid: number
+    keyword?: string
+    page: number
+  }) => {
     const data = await apiFetch(
-      `https://api.bilibili.com/x/series/recArchivesByKeywords?mid=${opt.mid}&keywords=${opt.keyword ?? ''}&pn=0`
+      `https://api.bilibili.com/x/series/recArchivesByKeywords?mid=${opt.mid}&keywords=${opt.keyword ?? ''}&pn=${opt.page}&ps=100`
     )
     return data
   },
-
   getStreamByCidAndBvid: async (opt: {
     cid: number
     bvid: string

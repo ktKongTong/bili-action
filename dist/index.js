@@ -31692,7 +31692,7 @@ const api = {
     },
     // https://socialsisteryi.github.io/bilibili-API-collect/docs/video/collection.html#根据关键词查找视频
     getArchiveByUser: async (opt) => {
-        const data = await apiFetch(`https://api.bilibili.com/x/series/recArchivesByKeywords?mid=${opt.mid}&keywords=${opt.keyword ?? ''}&pn=0`);
+        const data = await apiFetch(`https://api.bilibili.com/x/series/recArchivesByKeywords?mid=${opt.mid}&keywords=${opt.keyword ?? ''}&pn=${opt.page}&ps=100`);
         return data;
     },
     getStreamByCidAndBvid: async (opt) => {
@@ -31875,12 +31875,41 @@ const archiveSchema = z.object({
         total: z.number()
     })
 });
+async function getAllBiliMetaByUser(opt) {
+    let page = 1;
+    const handlePage = async (page) => {
+        const archives = await api.getArchiveByUser({ ...opt, page });
+        return archiveSchema.parse(archives);
+    };
+    let curPage = await handlePage(page);
+    const results = [];
+    while (curPage.archives.length == curPage.page.size) {
+        if (results.length > 1000) {
+            throw new Error('视频数超过 1000，请适当缩小查询范围');
+        }
+        results.push(...curPage.archives);
+        curPage = await handlePage(++page);
+    }
+    results.push(...curPage.archives);
+    return results;
+}
 async function getBiliMetaByUser(opt) {
-    const archives = await api.getArchiveByUser(opt);
-    const parsedArchives = archiveSchema.parse(archives);
-    const bvid = parsedArchives.archives[0].bvid;
-    const data = getBiliMetaById({ bvid: bvid });
-    return data;
+    let bvid;
+    let archives = [];
+    if (opt.batch) {
+        archives = await getAllBiliMetaByUser(opt);
+    }
+    else {
+        const _archives = await api.getArchiveByUser({ ...opt, page: 1 });
+        const parsedArchives = archiveSchema.parse(_archives);
+        archives = parsedArchives.archives;
+    }
+    bvid = archives[0].bvid;
+    const data = await getBiliMetaById({ bvid: bvid });
+    return {
+        ...data,
+        batch: archives
+    };
 }
 
 var pythonFormatJs;
@@ -32189,7 +32218,8 @@ const inputSchema = z
     aid: z.coerce.number().optional(),
     cid: z.coerce.number().optional(),
     mid: z.coerce.number().optional(),
-    keyword: z.string().optional()
+    keyword: z.string().optional(),
+    batch: z.coerce.boolean().optional()
 })
     .merge(commonFieldSchema);
 function parseInput() {
@@ -32199,12 +32229,14 @@ function parseInput() {
         cid: coreExports.getInput('cid'),
         mid: coreExports.getInput('mid'),
         keyword: coreExports.getInput('keyword'),
+        page: coreExports.getInput('page'),
         audio: coreExports.getInput('audio'),
         video: coreExports.getInput('video'),
         sessdata: coreExports.getInput('sessdata'),
         proxyHost: coreExports.getInput('proxy-stream-host'),
         audioFileTemplate: coreExports.getInput('audio-file-template'),
-        videoFileTemplate: coreExports.getInput('video-file-template')
+        videoFileTemplate: coreExports.getInput('video-file-template'),
+        batch: coreExports.getInput('batch')
     };
     const parsedInput = inputSchema.parse(input);
     return parsedInput;
@@ -32212,7 +32244,11 @@ function parseInput() {
 const userStrategy = {
     name: '按照关键字和用户ID获取最新视频',
     cond: (input) => input.mid,
-    getter: async (input) => await getBiliMetaByUser({ mid: input.mid, keyword: input.keyword })
+    getter: async (input) => await getBiliMetaByUser({
+        mid: input.mid,
+        keyword: input.keyword,
+        batch: input.batch ?? false
+    })
 };
 const idStrategy = {
     name: '按照bvid/aid获取视频',
@@ -32269,20 +32305,6 @@ async function run() {
             coreExports.setFailed(error.message);
     }
 }
-// const reasonMap = {
-//   '0': '成功',
-//   '-400': '请求错误',
-//   '-403': '权限不足',
-//   '-404': '无视频',
-//   '62002': '稿件不可见',
-//   '62004': '稿件审核中',
-//   '62012': '仅UP主自己可见'
-// }
-// const handleArray = (data: any[], key: string) => {
-//   for (const idx of data) {
-//     handleItem(data[idx], `${key}[${idx}]`)
-//   }
-// }
 const handleItem = (data, key) => {
     if (data == null)
         return;
@@ -32295,11 +32317,6 @@ const handleItem = (data, key) => {
             coreExports.debug(`设置输出: ${key}, ${JSON.stringify(data)}`);
             coreExports.setOutput(key, data);
             break;
-        // if (data instanceof Array) {
-        //   handleArray(data, key)
-        // } else {
-        //   handleData(data, key)
-        // }
         case 'undefined':
             return;
         case 'function':

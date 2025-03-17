@@ -26,6 +26,10 @@ inputs:
     description: |
       search keyword, use with `mid`, get user's latest video with keyword
     required: false
+  batch:
+    type: boolean
+    default: false
+    description: work with `mid` & `keyword`, get user's videos(max 1000) and set to batch output
   audio:
     description: upload audio
     required: false
@@ -52,6 +56,10 @@ outputs:
     description: aid
   cid:
     description: bid
+#  video:
+#    description: video detail, a stringifies json object
+#  batch:
+#    description: videos, a stringifies json array
 runs:
   using: node20
   main: dist/index.js
