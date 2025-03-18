@@ -31696,8 +31696,11 @@ const api = {
         return data;
     },
     getStreamByCidAndBvid: async (opt) => {
-        const host = opt.proxyHost || `https://api.bilibili.com`;
-        const data = await apiFetch(`${host}/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`);
+        let url = `https://api.bilibili.com/x/player/playurl?fnval=16&cid=${opt.cid}&bvid=${opt.bvid}`;
+        if (opt.proxyHost) {
+            url = `${opt.proxyHost}?${url}`;
+        }
+        const data = await apiFetch(url);
         return data;
     }
 };
@@ -32130,12 +32133,26 @@ function ensureDirectoryExistence(filePath) {
     ensureDirectoryExistence(dirname);
     fs.mkdirSync(dirname);
 }
-const saveStreamTo = async (url, backupUrls, destination) => {
+const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
+    let time = 1;
+    let res = await fetch(url, init);
+    if (res.ok)
+        return res;
+    while (time++ <= retry) {
+        const proxiedUrl = proxy && time > 1 ? `${proxy}?${url}` : url;
+        res = await fetch(proxiedUrl, init);
+        if (res.ok)
+            return res;
+    }
+    return res;
+};
+const saveStreamTo = async (url, backupUrls, destination, proxy) => {
     ensureDirectoryExistence(destination);
-    const res = await fetch(url);
+    const res = await retryFetch(url, { proxy });
     if (!res.ok) {
         const [backup, ...rest] = backupUrls;
         if (backup) {
+            coreExports.debug(`status:${res.status}, ${await res.text()}`);
             coreExports.info(`failed to fetch stream, use other backup stream url: ${backup}`);
             return await saveStreamTo(backup, rest, destination);
         }
@@ -32199,7 +32216,7 @@ const getAndDownloadStream = async (cid, bvid, opt) => {
         const { baseUrl, backupUrl } = sortedStream[0];
         coreExports.debug(`handling stream: ${JSON.stringify(sortedStream[0])}`);
         const path = getFilepath(sortedStream[0], opt.videoDetail, opt.streamOpt);
-        await saveStreamTo(baseUrl, backupUrl, path);
+        await saveStreamTo(baseUrl, backupUrl, path, opt.proxyHost);
     }
 };
 

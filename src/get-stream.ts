@@ -57,16 +57,38 @@ function ensureDirectoryExistence(filePath: string) {
   fs.mkdirSync(dirname)
 }
 
+type RetryParam = {
+  retry?: number
+  proxy?: string
+}
+
+const retryFetch = async (
+  url: string,
+  { retry = 3, proxy, ...init }: RequestInit & RetryParam
+) => {
+  let time = 1
+  let res = await fetch(url, init)
+  if (res.ok) return res
+  while (time++ <= retry) {
+    const proxiedUrl = proxy && time > 1 ? `${proxy}?${url}` : url
+    res = await fetch(proxiedUrl, init)
+    if (res.ok) return res
+  }
+  return res
+}
+
 const saveStreamTo = async (
   url: string,
   backupUrls: string[],
-  destination: string
+  destination: string,
+  proxy?: string
 ) => {
   ensureDirectoryExistence(destination)
-  const res = await fetch(url)
+  const res = await retryFetch(url, { proxy })
   if (!res.ok) {
     const [backup, ...rest] = backupUrls
     if (backup) {
+      core.debug(`status:${res.status}, ${await res.text()}`)
       core.info(
         `failed to fetch stream, use other backup stream url: ${backup}`
       )
@@ -146,6 +168,6 @@ export const getAndDownloadStream = async (
     const { baseUrl, backupUrl } = sortedStream[0]
     core.debug(`handling stream: ${JSON.stringify(sortedStream[0])}`)
     const path = getFilepath(sortedStream[0], opt.videoDetail, opt.streamOpt)
-    await saveStreamTo(baseUrl, backupUrl, path)
+    await saveStreamTo(baseUrl, backupUrl, path, opt.proxyHost)
   }
 }
