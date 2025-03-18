@@ -32134,15 +32134,17 @@ function ensureDirectoryExistence(filePath) {
     fs.mkdirSync(dirname);
 }
 const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
-    let time = 1;
+    let time = 0;
     let res = await fetch(url, init);
     if (res.ok)
         return res;
-    while (time++ <= retry) {
-        const proxiedUrl = proxy && time > 1 ? `${proxy}?${url}` : url;
+    coreExports.debug(`fetch: ${url} failed, ${res.status}, ${await res.text()}`);
+    while (time++ < retry) {
+        const proxiedUrl = proxy ? `${proxy}?${url}` : url;
         res = await fetch(proxiedUrl, init);
         if (res.ok)
             return res;
+        coreExports.debug(`fetch: ${proxiedUrl} failed, retry time: ${time}, ${res.status}, ${await res.text()}`);
     }
     return res;
 };
