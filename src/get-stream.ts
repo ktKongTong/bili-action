@@ -69,13 +69,13 @@ const retryFetch = async (
   let time = 0
   let res = await fetch(url, init)
   if (res.ok) return res
-  core.debug(`fetch: ${url} failed, ${res.status}, ${await res.text()}`)
+  core.debug(`fetch: ${url} failed, ${res.status}`)
   while (time++ < retry) {
     const proxiedUrl = proxy ? `${proxy}?${url}` : url
     res = await fetch(proxiedUrl, init)
     if (res.ok) return res
     core.debug(
-      `fetch: ${proxiedUrl} failed, retry time: ${time}, ${res.status}, ${await res.text()}`
+      `fetch: ${proxiedUrl} failed, retry time: ${time}, ${res.status}`
     )
   }
   return res

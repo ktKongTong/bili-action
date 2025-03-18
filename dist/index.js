@@ -32138,13 +32138,13 @@ const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
     let res = await fetch(url, init);
     if (res.ok)
         return res;
-    coreExports.debug(`fetch: ${url} failed, ${res.status}, ${await res.text()}`);
+    coreExports.debug(`fetch: ${url} failed, ${res.status}`);
     while (time++ < retry) {
         const proxiedUrl = proxy ? `${proxy}?${url}` : url;
         res = await fetch(proxiedUrl, init);
         if (res.ok)
             return res;
-        coreExports.debug(`fetch: ${proxiedUrl} failed, retry time: ${time}, ${res.status}, ${await res.text()}`);
+        coreExports.debug(`fetch: ${proxiedUrl} failed, retry time: ${time}, ${res.status}`);
     }
     return res;
 };
