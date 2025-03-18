@@ -32133,6 +32133,7 @@ function ensureDirectoryExistence(filePath) {
     ensureDirectoryExistence(dirname);
     fs.mkdirSync(dirname);
 }
+const ua = () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0';
 const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
     let time = 0;
     let res = await fetch(url, init);
@@ -32150,7 +32151,13 @@ const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
 };
 const saveStreamTo = async (url, backupUrls, destination, proxy) => {
     ensureDirectoryExistence(destination);
-    const res = await retryFetch(url, { proxy });
+    const res = await retryFetch(url, {
+        proxy,
+        referrer: 'https://www.bilibili.com',
+        headers: {
+            'User-Agent': ua()
+        }
+    });
     if (!res.ok) {
         const [backup, ...rest] = backupUrls;
         if (backup) {

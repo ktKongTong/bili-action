@@ -62,6 +62,9 @@ type RetryParam = {
   proxy?: string
 }
 
+const ua = () =>
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
+
 const retryFetch = async (
   url: string,
   { retry = 3, proxy, ...init }: RequestInit & RetryParam
@@ -88,7 +91,14 @@ const saveStreamTo = async (
   proxy?: string
 ) => {
   ensureDirectoryExistence(destination)
-  const res = await retryFetch(url, { proxy })
+  // https://github.com/SocialSisterYi/bilibili-API-collect/blob/2e203db62eb69e171e32b0e1e7197e47ee078ff8/docs/bangumi/videostream_url.md?plain=1#L348C30-L348C31
+  const res = await retryFetch(url, {
+    proxy,
+    referrer: 'https://www.bilibili.com',
+    headers: {
+      'User-Agent': ua()
+    }
+  })
   if (!res.ok) {
     const [backup, ...rest] = backupUrls
     if (backup) {
