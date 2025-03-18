@@ -31,12 +31,14 @@ jobs:
           proxy-stream-host: https://posh-stoat-85.deno.dev
           aid: 2325306
           audio: true
+          audio-file-template: 'output/{bvid}.m4a'
       - name: Test Download Local Action
         uses: ./
         with:
           proxy-stream-host: https://posh-stoat-85.deno.dev
           bvid: BV1C6kvYDEWx
           audio: true
+          audio-file-template: 'output/{bvid}.m4a'
       - name: Test Download Local Action
         id: test-get-stream-by-user-action
         uses: ./
@@ -45,7 +47,7 @@ jobs:
           mid: 316568752
           keyword: 睡前消息
           audio: true
-          audio-file-template: 'output/{bvid}.mp4'
+          audio-file-template: 'output/{bvid}.m4a'
       - uses: actions/upload-artifact@v4
         with:
           name: output
