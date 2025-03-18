@@ -31,7 +31,12 @@ jobs:
           proxy-stream-host: https://posh-stoat-85.deno.dev
           aid: 2325306
           audio: true
-
+      - name: Test Download Local Action
+        uses: ./
+        with:
+          proxy-stream-host: https://posh-stoat-85.deno.dev
+          bvid: BV1C6kvYDEWx
+          audio: true
       - name: Test Download Local Action
         id: test-get-stream-by-user-action
         uses: ./
