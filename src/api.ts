@@ -1,5 +1,6 @@
 import z from 'zod'
 import * as core from '@actions/core'
+import { wbiQuery } from './wbi.js'
 const responseSchema = z.object({
   code: z.number(),
   message: z.coerce.string(),
@@ -8,6 +9,8 @@ const responseSchema = z.object({
   ttl: z.coerce.number().optional()
 })
 
+const ua =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
 const apiFetch = async <T = unknown>(
   input: string | URL | globalThis.Request,
   init?: RequestInit
@@ -25,7 +28,9 @@ const apiFetch = async <T = unknown>(
   }
   if (parsed.data.code != 0)
     core.debug(`请求出错,非预期结果：${JSON.stringify(parsed.data)}`)
-  if (parsed.data.data) return parsed.data.data as T
+  if (parsed.data.data) {
+    return parsed.data.data as T
+  }
   return parsed.data.result as T
 }
 
@@ -62,7 +67,27 @@ export const api = {
     if (opt.proxyHost) {
       url = `${opt.proxyHost}?${url}`
     }
-    const data = await apiFetch(url)
+    let cookie = opt.sessdata ? `SESSDATA=${opt.sessdata}` : ''
+    const data = await apiFetch(url, {
+      headers: {
+        Cookie: cookie,
+        Referer: 'https://www.bilibili.com/',
+        'User-Agent': ua
+      }
+    })
     return data
+  },
+
+  getTopComment: async (opt: { aid: string }) => {
+    const query = await wbiQuery({
+      oid: opt.aid,
+      type: 1
+    })
+    return apiFetch(`https://api.bilibili.com/x/v2/reply/wbi/main?${query}`, {
+      headers: {
+        Referer: 'https://www.bilibili.com/',
+        'User-Agent': ua
+      }
+    })
   }
 }

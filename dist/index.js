@@ -31653,6 +31653,414 @@ var z = /*#__PURE__*/Object.freeze({
     ZodError: ZodError
 });
 
+var md5$1 = {exports: {}};
+
+var crypt = {exports: {}};
+
+var hasRequiredCrypt;
+
+function requireCrypt () {
+	if (hasRequiredCrypt) return crypt.exports;
+	hasRequiredCrypt = 1;
+	(function() {
+	  var base64map
+	      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+
+	  crypt$1 = {
+	    // Bit-wise rotation left
+	    rotl: function(n, b) {
+	      return (n << b) | (n >>> (32 - b));
+	    },
+
+	    // Bit-wise rotation right
+	    rotr: function(n, b) {
+	      return (n << (32 - b)) | (n >>> b);
+	    },
+
+	    // Swap big-endian to little-endian and vice versa
+	    endian: function(n) {
+	      // If number given, swap endian
+	      if (n.constructor == Number) {
+	        return crypt$1.rotl(n, 8) & 0x00FF00FF | crypt$1.rotl(n, 24) & 0xFF00FF00;
+	      }
+
+	      // Else, assume array and swap all items
+	      for (var i = 0; i < n.length; i++)
+	        n[i] = crypt$1.endian(n[i]);
+	      return n;
+	    },
+
+	    // Generate an array of any length of random bytes
+	    randomBytes: function(n) {
+	      for (var bytes = []; n > 0; n--)
+	        bytes.push(Math.floor(Math.random() * 256));
+	      return bytes;
+	    },
+
+	    // Convert a byte array to big-endian 32-bit words
+	    bytesToWords: function(bytes) {
+	      for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+	        words[b >>> 5] |= bytes[i] << (24 - b % 32);
+	      return words;
+	    },
+
+	    // Convert big-endian 32-bit words to a byte array
+	    wordsToBytes: function(words) {
+	      for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+	        bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a hex string
+	    bytesToHex: function(bytes) {
+	      for (var hex = [], i = 0; i < bytes.length; i++) {
+	        hex.push((bytes[i] >>> 4).toString(16));
+	        hex.push((bytes[i] & 0xF).toString(16));
+	      }
+	      return hex.join('');
+	    },
+
+	    // Convert a hex string to a byte array
+	    hexToBytes: function(hex) {
+	      for (var bytes = [], c = 0; c < hex.length; c += 2)
+	        bytes.push(parseInt(hex.substr(c, 2), 16));
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a base-64 string
+	    bytesToBase64: function(bytes) {
+	      for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+	        var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+	        for (var j = 0; j < 4; j++)
+	          if (i * 8 + j * 6 <= bytes.length * 8)
+	            base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
+	          else
+	            base64.push('=');
+	      }
+	      return base64.join('');
+	    },
+
+	    // Convert a base-64 string to a byte array
+	    base64ToBytes: function(base64) {
+	      // Remove non-base-64 characters
+	      base64 = base64.replace(/[^A-Z0-9+\/]/ig, '');
+
+	      for (var bytes = [], i = 0, imod4 = 0; i < base64.length;
+	          imod4 = ++i % 4) {
+	        if (imod4 == 0) continue;
+	        bytes.push(((base64map.indexOf(base64.charAt(i - 1))
+	            & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2))
+	            | (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
+	      }
+	      return bytes;
+	    }
+	  };
+
+	  crypt.exports = crypt$1;
+	})();
+	return crypt.exports;
+}
+
+var charenc_1;
+var hasRequiredCharenc;
+
+function requireCharenc () {
+	if (hasRequiredCharenc) return charenc_1;
+	hasRequiredCharenc = 1;
+	var charenc = {
+	  // UTF-8 encoding
+	  utf8: {
+	    // Convert a string to a byte array
+	    stringToBytes: function(str) {
+	      return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
+	    },
+
+	    // Convert a byte array to a string
+	    bytesToString: function(bytes) {
+	      return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
+	    }
+	  },
+
+	  // Binary encoding
+	  bin: {
+	    // Convert a string to a byte array
+	    stringToBytes: function(str) {
+	      for (var bytes = [], i = 0; i < str.length; i++)
+	        bytes.push(str.charCodeAt(i) & 0xFF);
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a string
+	    bytesToString: function(bytes) {
+	      for (var str = [], i = 0; i < bytes.length; i++)
+	        str.push(String.fromCharCode(bytes[i]));
+	      return str.join('');
+	    }
+	  }
+	};
+
+	charenc_1 = charenc;
+	return charenc_1;
+}
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+var isBuffer_1;
+var hasRequiredIsBuffer;
+
+function requireIsBuffer () {
+	if (hasRequiredIsBuffer) return isBuffer_1;
+	hasRequiredIsBuffer = 1;
+	// The _isBuffer check is for Safari 5-7 support, because it's missing
+	// Object.prototype.constructor. Remove this eventually
+	isBuffer_1 = function (obj) {
+	  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
+	};
+
+	function isBuffer (obj) {
+	  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+	}
+
+	// For Node v0.10 support. Remove this eventually.
+	function isSlowBuffer (obj) {
+	  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
+	}
+	return isBuffer_1;
+}
+
+var hasRequiredMd5;
+
+function requireMd5 () {
+	if (hasRequiredMd5) return md5$1.exports;
+	hasRequiredMd5 = 1;
+	(function(){
+	  var crypt = requireCrypt(),
+	      utf8 = requireCharenc().utf8,
+	      isBuffer = requireIsBuffer(),
+	      bin = requireCharenc().bin,
+
+	  // The core
+	  md5 = function (message, options) {
+	    // Convert to byte array
+	    if (message.constructor == String)
+	      if (options && options.encoding === 'binary')
+	        message = bin.stringToBytes(message);
+	      else
+	        message = utf8.stringToBytes(message);
+	    else if (isBuffer(message))
+	      message = Array.prototype.slice.call(message, 0);
+	    else if (!Array.isArray(message) && message.constructor !== Uint8Array)
+	      message = message.toString();
+	    // else, assume byte array already
+
+	    var m = crypt.bytesToWords(message),
+	        l = message.length * 8,
+	        a =  1732584193,
+	        b = -271733879,
+	        c = -1732584194,
+	        d =  271733878;
+
+	    // Swap endian
+	    for (var i = 0; i < m.length; i++) {
+	      m[i] = ((m[i] <<  8) | (m[i] >>> 24)) & 0x00FF00FF |
+	             ((m[i] << 24) | (m[i] >>>  8)) & 0xFF00FF00;
+	    }
+
+	    // Padding
+	    m[l >>> 5] |= 0x80 << (l % 32);
+	    m[(((l + 64) >>> 9) << 4) + 14] = l;
+
+	    // Method shortcuts
+	    var FF = md5._ff,
+	        GG = md5._gg,
+	        HH = md5._hh,
+	        II = md5._ii;
+
+	    for (var i = 0; i < m.length; i += 16) {
+
+	      var aa = a,
+	          bb = b,
+	          cc = c,
+	          dd = d;
+
+	      a = FF(a, b, c, d, m[i+ 0],  7, -680876936);
+	      d = FF(d, a, b, c, m[i+ 1], 12, -389564586);
+	      c = FF(c, d, a, b, m[i+ 2], 17,  606105819);
+	      b = FF(b, c, d, a, m[i+ 3], 22, -1044525330);
+	      a = FF(a, b, c, d, m[i+ 4],  7, -176418897);
+	      d = FF(d, a, b, c, m[i+ 5], 12,  1200080426);
+	      c = FF(c, d, a, b, m[i+ 6], 17, -1473231341);
+	      b = FF(b, c, d, a, m[i+ 7], 22, -45705983);
+	      a = FF(a, b, c, d, m[i+ 8],  7,  1770035416);
+	      d = FF(d, a, b, c, m[i+ 9], 12, -1958414417);
+	      c = FF(c, d, a, b, m[i+10], 17, -42063);
+	      b = FF(b, c, d, a, m[i+11], 22, -1990404162);
+	      a = FF(a, b, c, d, m[i+12],  7,  1804603682);
+	      d = FF(d, a, b, c, m[i+13], 12, -40341101);
+	      c = FF(c, d, a, b, m[i+14], 17, -1502002290);
+	      b = FF(b, c, d, a, m[i+15], 22,  1236535329);
+
+	      a = GG(a, b, c, d, m[i+ 1],  5, -165796510);
+	      d = GG(d, a, b, c, m[i+ 6],  9, -1069501632);
+	      c = GG(c, d, a, b, m[i+11], 14,  643717713);
+	      b = GG(b, c, d, a, m[i+ 0], 20, -373897302);
+	      a = GG(a, b, c, d, m[i+ 5],  5, -701558691);
+	      d = GG(d, a, b, c, m[i+10],  9,  38016083);
+	      c = GG(c, d, a, b, m[i+15], 14, -660478335);
+	      b = GG(b, c, d, a, m[i+ 4], 20, -405537848);
+	      a = GG(a, b, c, d, m[i+ 9],  5,  568446438);
+	      d = GG(d, a, b, c, m[i+14],  9, -1019803690);
+	      c = GG(c, d, a, b, m[i+ 3], 14, -187363961);
+	      b = GG(b, c, d, a, m[i+ 8], 20,  1163531501);
+	      a = GG(a, b, c, d, m[i+13],  5, -1444681467);
+	      d = GG(d, a, b, c, m[i+ 2],  9, -51403784);
+	      c = GG(c, d, a, b, m[i+ 7], 14,  1735328473);
+	      b = GG(b, c, d, a, m[i+12], 20, -1926607734);
+
+	      a = HH(a, b, c, d, m[i+ 5],  4, -378558);
+	      d = HH(d, a, b, c, m[i+ 8], 11, -2022574463);
+	      c = HH(c, d, a, b, m[i+11], 16,  1839030562);
+	      b = HH(b, c, d, a, m[i+14], 23, -35309556);
+	      a = HH(a, b, c, d, m[i+ 1],  4, -1530992060);
+	      d = HH(d, a, b, c, m[i+ 4], 11,  1272893353);
+	      c = HH(c, d, a, b, m[i+ 7], 16, -155497632);
+	      b = HH(b, c, d, a, m[i+10], 23, -1094730640);
+	      a = HH(a, b, c, d, m[i+13],  4,  681279174);
+	      d = HH(d, a, b, c, m[i+ 0], 11, -358537222);
+	      c = HH(c, d, a, b, m[i+ 3], 16, -722521979);
+	      b = HH(b, c, d, a, m[i+ 6], 23,  76029189);
+	      a = HH(a, b, c, d, m[i+ 9],  4, -640364487);
+	      d = HH(d, a, b, c, m[i+12], 11, -421815835);
+	      c = HH(c, d, a, b, m[i+15], 16,  530742520);
+	      b = HH(b, c, d, a, m[i+ 2], 23, -995338651);
+
+	      a = II(a, b, c, d, m[i+ 0],  6, -198630844);
+	      d = II(d, a, b, c, m[i+ 7], 10,  1126891415);
+	      c = II(c, d, a, b, m[i+14], 15, -1416354905);
+	      b = II(b, c, d, a, m[i+ 5], 21, -57434055);
+	      a = II(a, b, c, d, m[i+12],  6,  1700485571);
+	      d = II(d, a, b, c, m[i+ 3], 10, -1894986606);
+	      c = II(c, d, a, b, m[i+10], 15, -1051523);
+	      b = II(b, c, d, a, m[i+ 1], 21, -2054922799);
+	      a = II(a, b, c, d, m[i+ 8],  6,  1873313359);
+	      d = II(d, a, b, c, m[i+15], 10, -30611744);
+	      c = II(c, d, a, b, m[i+ 6], 15, -1560198380);
+	      b = II(b, c, d, a, m[i+13], 21,  1309151649);
+	      a = II(a, b, c, d, m[i+ 4],  6, -145523070);
+	      d = II(d, a, b, c, m[i+11], 10, -1120210379);
+	      c = II(c, d, a, b, m[i+ 2], 15,  718787259);
+	      b = II(b, c, d, a, m[i+ 9], 21, -343485551);
+
+	      a = (a + aa) >>> 0;
+	      b = (b + bb) >>> 0;
+	      c = (c + cc) >>> 0;
+	      d = (d + dd) >>> 0;
+	    }
+
+	    return crypt.endian([a, b, c, d]);
+	  };
+
+	  // Auxiliary functions
+	  md5._ff  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b & c | ~b & d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._gg  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b & d | c & ~d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._hh  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b ^ c ^ d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._ii  = function (a, b, c, d, x, s, t) {
+	    var n = a + (c ^ (b | ~d)) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+
+	  // Package private blocksize
+	  md5._blocksize = 16;
+	  md5._digestsize = 16;
+
+	  md5$1.exports = function (message, options) {
+	    if (message === undefined || message === null)
+	      throw new Error('Illegal argument ' + message);
+
+	    var digestbytes = crypt.wordsToBytes(md5(message, options));
+	    return options && options.asBytes ? digestbytes :
+	        options && options.asString ? bin.bytesToString(digestbytes) :
+	        crypt.bytesToHex(digestbytes);
+	  };
+
+	})();
+	return md5$1.exports;
+}
+
+var md5Exports = requireMd5();
+var md5 = /*@__PURE__*/getDefaultExportFromCjs(md5Exports);
+
+const mixinKeyEncTab = [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
+    33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40, 61,
+    26, 17, 0, 1, 60, 51, 30, 4, 22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36,
+    20, 34, 44, 52
+];
+// 对 imgKey 和 subKey 进行字符顺序打乱编码
+// @ts-ignore
+const getMixinKey = (orig) => mixinKeyEncTab
+    .map((n) => orig[n])
+    .join('')
+    .slice(0, 32);
+// 为请求参数进行 wbi 签名
+// @ts-ignore
+function encWbi(params, img_key, sub_key) {
+    const mixin_key = getMixinKey(img_key + sub_key), curr_time = Math.round(Date.now() / 1000), chr_filter = /[!'()*]/g;
+    Object.assign(params, { wts: curr_time }); // 添加 wts 字段
+    // 按照 key 重排参数
+    const query = Object.keys(params)
+        .sort()
+        .map((key) => {
+        // 过滤 value 中的 "!'()*" 字符
+        const value = params[key].toString().replace(chr_filter, '');
+        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+    })
+        .join('&');
+    const wbi_sign = md5(query + mixin_key); // 计算 w_rid
+    return query + '&w_rid=' + wbi_sign;
+}
+let wbi = undefined;
+// 获取最新的 img_key 和 sub_key
+const getWBIKey = async () => {
+    if (wbi)
+        return wbi;
+    const res = await fetch('https://api.bilibili.com/x/web-interface/nav', {
+        headers: {
+            // Cookie: 'SESSDATA=xxxxxx',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+            Referer: 'https://www.bilibili.com/'
+        }
+    });
+    // @ts-ignore
+    const { 
+    // @ts-ignore
+    data: { wbi_img: { img_url, sub_url } } } = await res.json();
+    wbi = {
+        img_key: img_url.slice(img_url.lastIndexOf('/') + 1, img_url.lastIndexOf('.')),
+        sub_key: sub_url.slice(sub_url.lastIndexOf('/') + 1, sub_url.lastIndexOf('.'))
+    };
+    return wbi;
+};
+const wbiQuery = async (p) => {
+    const web_keys = await getWBIKey();
+    const query = encWbi(p, web_keys.img_key, web_keys.sub_key);
+    return query;
+};
+
 const responseSchema = z.object({
     code: z.number(),
     message: z.coerce.string(),
@@ -31660,6 +32068,7 @@ const responseSchema = z.object({
     result: z.any().optional(),
     ttl: z.coerce.number().optional()
 });
+const ua$1 = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0';
 const apiFetch = async (input, init) => {
     coreExports.debug(`Fetching ${input}`);
     const data = await fetch(input, init);
@@ -31674,8 +32083,9 @@ const apiFetch = async (input, init) => {
     }
     if (parsed.data.code != 0)
         coreExports.debug(`请求出错,非预期结果：${JSON.stringify(parsed.data)}`);
-    if (parsed.data.data)
+    if (parsed.data.data) {
         return parsed.data.data;
+    }
     return parsed.data.result;
 };
 const api = {
@@ -31700,8 +32110,27 @@ const api = {
         if (opt.proxyHost) {
             url = `${opt.proxyHost}?${url}`;
         }
-        const data = await apiFetch(url);
+        let cookie = opt.sessdata ? `SESSDATA=${opt.sessdata}` : '';
+        const data = await apiFetch(url, {
+            headers: {
+                Cookie: cookie,
+                Referer: 'https://www.bilibili.com/',
+                'User-Agent': ua$1
+            }
+        });
         return data;
+    },
+    getTopComment: async (opt) => {
+        const query = await wbiQuery({
+            oid: opt.aid,
+            type: 1
+        });
+        return apiFetch(`https://api.bilibili.com/x/v2/reply/wbi/main?${query}`, {
+            headers: {
+                Referer: 'https://www.bilibili.com/',
+                'User-Agent': ua$1
+            }
+        });
     }
 };
 
@@ -31852,6 +32281,17 @@ const detailSchema = z.object({
 async function getBiliMetaById(opt) {
     const detail = await api.getDetailById(opt);
     const data = detailSchema.parse(detail);
+    try {
+        // @ts-ignore
+        const comment = (await api.getTopComment({
+            aid: data.aid?.toString()
+        }));
+        return {
+            ...data,
+            topComment: comment?.top
+        };
+    }
+    catch (e) { }
     return data;
 }
 const archiveItemSchema = z.object({
@@ -32151,6 +32591,7 @@ const retryFetch = async (url, { retry = 3, proxy, ...init }) => {
 };
 const saveStreamTo = async (url, backupUrls, destination, proxy) => {
     ensureDirectoryExistence(destination);
+    // https://github.com/SocialSisterYi/bilibili-API-collect/blob/2e203db62eb69e171e32b0e1e7197e47ee078ff8/docs/bangumi/videostream_url.md?plain=1#L348C30-L348C31
     const res = await retryFetch(url, {
         proxy,
         referrer: 'https://www.bilibili.com',
@@ -32305,10 +32746,8 @@ async function run() {
             throw new Error('未能获取到视频信息');
         }
         coreExports.debug(`成功获取视频信息: ${JSON.stringify(videoMeta)}`);
-        coreExports.debug(`开始将视频信息写入output`);
-        handleData(videoMeta);
+        // console.log('setting-output', JSON.stringify(videoMeta))
         coreExports.setOutput('video', videoMeta);
-        coreExports.debug(`output写入完成`);
         if (input.audio || input.video) {
             coreExports.debug(`开始获取Stream`);
             // 保存视频流，音频流
@@ -32331,32 +32770,6 @@ async function run() {
             coreExports.setFailed(error.message);
     }
 }
-const handleItem = (data, key) => {
-    if (data == null)
-        return;
-    switch (typeof data) {
-        case 'bigint':
-        case 'number':
-        case 'string':
-        case 'boolean':
-        case 'object':
-            coreExports.debug(`设置输出: ${key}, ${JSON.stringify(data)}`);
-            coreExports.setOutput(key, data);
-            break;
-        case 'undefined':
-            return;
-        case 'function':
-        case 'symbol':
-            throw new Error('Unreachable code line');
-    }
-};
-const handleData = (data, prefix = '') => {
-    // const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
-    const keys = Object.keys(data);
-    for (const key of keys) {
-        handleItem(data[key], key);
-    }
-};
 
 run();
 //# sourceMappingURL=index.js.map

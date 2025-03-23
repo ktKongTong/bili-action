@@ -10,6 +10,9 @@ importers:
       '@actions/core':
         specifier: ^1.11.1
         version: 1.11.1
+      md5:
+        specifier: ^2.3.0
+        version: 2.3.0
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
@@ -41,6 +44,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      '@types/md5':
+        specifier: ^2.3.5
+        version: 2.3.5
       '@types/node':
         specifier: ^20.17.24
         version: 20.17.24
@@ -1661,6 +1667,12 @@ packages:
         integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
       }
 
+  '@types/md5@2.3.5':
+    resolution:
+      {
+        integrity: sha512-/i42wjYNgE6wf0j2bcTX6kuowmdL/6PE4IVitMpm2eYKBUuYCprdcWVK+xEF0gcV6ufMCRhtxmReGfc6hIK7Jw==
+      }
+
   '@types/node@20.17.24':
     resolution:
       {
@@ -2250,6 +2262,12 @@ packages:
       }
     engines: { node: '>=10' }
 
+  charenc@0.0.2:
+    resolution:
+      {
+        integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==
+      }
+
   ci-info@3.9.0:
     resolution:
       {
@@ -2377,6 +2395,12 @@ packages:
         integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==
       }
     engines: { node: '>= 8' }
+
+  crypt@0.0.2:
+    resolution:
+      {
+        integrity: sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
+      }
 
   data-view-buffer@1.0.2:
     resolution:
@@ -3422,6 +3446,12 @@ packages:
       }
     engines: { node: '>= 0.4' }
 
+  is-buffer@1.1.6:
+    resolution:
+      {
+        integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
+      }
+
   is-bun-module@1.3.0:
     resolution:
       {
@@ -4105,6 +4135,12 @@ packages:
         integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==
       }
     engines: { node: '>= 0.4' }
+
+  md5@2.3.0:
+    resolution:
+      {
+        integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==
+      }
 
   merge-stream@2.0.0:
     resolution:
@@ -6562,6 +6598,8 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
+  '@types/md5@2.3.5': {}
+
   '@types/node@20.17.24':
     dependencies:
       undici-types: 6.19.8
@@ -6984,6 +7022,8 @@ snapshots:
 
   char-regex@1.0.2: {}
 
+  charenc@0.0.2: {}
+
   ci-info@3.9.0: {}
 
   cjs-module-lexer@1.4.3: {}
@@ -7059,6 +7099,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  crypt@0.0.2: {}
 
   data-view-buffer@1.0.2:
     dependencies:
@@ -7806,6 +7848,8 @@ snapshots:
       call-bound: 1.0.4
       has-tostringtag: 1.0.2
 
+  is-buffer@1.1.6: {}
+
   is-bun-module@1.3.0:
     dependencies:
       semver: 7.7.1
@@ -8370,6 +8414,12 @@ snapshots:
       tmpl: 1.0.5
 
   math-intrinsics@1.1.0: {}
+
+  md5@2.3.0:
+    dependencies:
+      charenc: 0.0.2
+      crypt: 0.0.2
+      is-buffer: 1.1.6
 
   merge-stream@2.0.0: {}
 

@@ -109,10 +109,8 @@ export async function run(): Promise<void> {
       throw new Error('未能获取到视频信息')
     }
     core.debug(`成功获取视频信息: ${JSON.stringify(videoMeta)}`)
-    core.debug(`开始将视频信息写入output`)
-    handleData(videoMeta)
+    // console.log('setting-output', JSON.stringify(videoMeta))
     core.setOutput('video', videoMeta)
-    core.debug(`output写入完成`)
     if (input.audio || input.video) {
       core.debug(`开始获取Stream`)
       // 保存视频流，音频流
@@ -131,32 +129,5 @@ export async function run(): Promise<void> {
     core.debug('Bilibili Action 执行完成')
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
-  }
-}
-
-const handleItem = (data: any, key: string) => {
-  if (data == null) return
-  switch (typeof data) {
-    case 'bigint':
-    case 'number':
-    case 'string':
-    case 'boolean':
-    case 'object':
-      core.debug(`设置输出: ${key}, ${JSON.stringify(data)}`)
-      core.setOutput(key, data)
-      break
-    case 'undefined':
-      return
-    case 'function':
-    case 'symbol':
-      throw new Error('Unreachable code line')
-  }
-}
-
-const handleData = (data: Record<string, any>, prefix: string = '') => {
-  // const getKey = (key: string) => prefix + `${prefix === '' ? '' : '.'}` + key
-  const keys = Object.keys(data)
-  for (const key of keys) {
-    handleItem(data[key], key)
   }
 }

@@ -22,7 +22,12 @@ jobs:
         id: test-action
         uses: ./
         with:
-          aid: 2325306
+          aid: 114209723516061
+      - name: Show Result
+        run: |
+          echo '${{steps.test-action.outputs.video}}'
+          echo 'show top comment'
+          echo '${{toJSON(fromJSON(steps.test-action.outputs.video).topComment)}}'
 
       - name: Test Download Local Action
         id: test-stream-action
@@ -56,7 +61,4 @@ jobs:
       - name: Print Output
         id: output
         run: |
-          echo "${{ steps.test-action.outputs.bvid }}"
-          echo "${{ steps.test-action.outputs.title }}"
-          echo "${{ toJSON(steps.test-action.outputs.owner) }}"
           echo '${{ steps.test-action.outputs.video }}'

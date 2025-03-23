@@ -159,6 +159,16 @@ export async function getBiliMetaById(opt: {
 }) {
   const detail = await api.getDetailById(opt)
   const data = detailSchema.parse(detail)
+  try {
+    // @ts-ignore
+    const comment = (await api.getTopComment({
+      aid: data.aid?.toString()
+    })) as any
+    return {
+      ...data,
+      topComment: comment?.top
+    }
+  } catch (e) {}
   return data
 }
 

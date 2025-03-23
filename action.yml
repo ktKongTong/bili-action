@@ -52,16 +52,8 @@ inputs:
     description: video file path template, use python like formating
     required: false
 outputs:
-  bvid:
-    description: bvid
-  aid:
-    description: aid
-  cid:
-    description: bid
-#  video:
-#    description: video detail, a stringifies json object
-#  batch:
-#    description: videos, a stringifies json array
+  video:
+    description: video info
 runs:
   using: node20
   main: dist/index.js
